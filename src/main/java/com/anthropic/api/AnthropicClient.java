@@ -7,6 +7,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import kong.unirest.HttpResponse;
+import kong.unirest.Unirest;
 
 public final class AnthropicClient {
     private final String apiKey;
@@ -106,5 +108,36 @@ public final class AnthropicClient {
         public String getText() {
             return text;
         }
+    }
+
+    public record GeneratePromptRequest(String targetModel, String task) {}
+    public record ImprovePromptRequest(String feedback, List<Message> messages, String system, String targetModel) {}
+    public record TemplatizePromptRequest(List<Message> messages, String system) {}
+
+    public HttpResponse<String> generatePrompt(GeneratePromptRequest request) {
+        Objects.requireNonNull(request, "Request cannot be null");
+        return Unirest.post("https://api.anthropic.com/v1/experimental/generate_prompt")
+            .header("x-api-key", apiKey)
+            .header("Content-Type", "application/json")
+            .body(request)
+            .asString();
+    }
+
+    public HttpResponse<String> improvePrompt(ImprovePromptRequest request) {
+        Objects.requireNonNull(request, "Request cannot be null");
+        return Unirest.post("https://api.anthropic.com/v1/experimental/improve_prompt")
+            .header("x-api-key", apiKey)
+            .header("Content-Type", "application/json")
+            .body(request)
+            .asString();
+    }
+
+    public HttpResponse<String> templatizePrompt(TemplatizePromptRequest request) {
+        Objects.requireNonNull(request, "Request cannot be null");
+        return Unirest.post("https://api.anthropic.com/v1/experimental/templatize_prompt")
+            .header("x-api-key", apiKey)
+            .header("Content-Type", "application/json")
+            .body(request)
+            .asString();
     }
 } 

@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../../../../../.."
+		},
+		{
+			"name": "anthropic-sdk-java",
+			"path": "../../../../../../anthropic-sdk-java"
+		}
+	],
+	"settings": {}
+}
