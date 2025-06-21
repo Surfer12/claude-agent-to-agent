@@ -3,28 +3,44 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
-This project, `claude-agent-to-agent`, is a Python-based application that uses the Anthropic API to facilitate agent-to-agent communication between Claude AI assistants. It's currently in the initial setup phase, with the environment configured using Pixi package manager.
+A CLI application that creates Claude-powered agents with tool capabilities and MCP server integration. The project includes multiple sub-projects including a computer-use demo and financial data analyst interface.
 
-## Environment Management
-- `pixi install` - Install dependencies from pixi.toml
-- `pixi run python [script.py]` - Run Python scripts using the managed environment
-- `pixi add [package]` - Add a new dependency to the project
-- `pixi shell` - Activate the Pixi environment for interactive use
+## Common Commands
+- `pixi install` - Install all dependencies
+- `pixi run cli` - Run the main CLI (equivalent to `python cli.py`)
+- `pixi run example-simple` - Run simple CLI example
+- `pixi run example-mcp` - Run MCP tools example
+- `pip install -e .` - Install as editable package for development
 
-## Development Guidelines
-- Use Python 3.13+ features when applicable (as specified in the environment)
-- Follow PEP 8 style guide for Python code
-- Include type hints for function parameters and return values
-- Use the Anthropic Python SDK for all API calls (available via the dependency)
+## Architecture Overview
+The core architecture centers around the `Agent` class in `agents/agent.py` which:
+- Manages message history with automatic context window truncation
+- Handles tool execution through async loops
+- Integrates with MCP servers for dynamic tool loading
+- Uses the Anthropic client with configurable model parameters
 
-## Project Structure (Recommended)
-- `src/` - Main source code directory
-- `tests/` - Test files
-- `examples/` - Example usage scripts
-- `README.md` - Project documentation
+Key architectural components:
+- **Agent**: Main orchestrator with message history and tool management
+- **Tools**: Base tool interface with async execution (`agents/tools/base.py`)
+- **MCP Integration**: Dynamic tool loading from Model Context Protocol servers
+- **Message History**: Context-aware history management with token counting
+- **CLI**: Main entry point with argument parsing and interactive mode
 
-## Working with the Anthropic API
-- Use version-specific imports from the anthropic package
-- Store API keys in environment variables, never hardcode them
-- Follow Anthropic's rate limiting guidelines for API calls
-- Handle API errors gracefully with appropriate error handling
+## Tool System
+Tools inherit from the base `Tool` class and implement:
+- `name`, `description`, and `input_schema` properties
+- Async `execute()` method for tool functionality
+- Conversion to Claude API format via `to_dict()`
+
+Available built-in tools: `think`, `file_read`, `file_write`
+
+## MCP Server Integration
+The agent can connect to external MCP servers for additional tools:
+- Servers are configured as a list of connection details
+- Tools are dynamically loaded and made available to the agent
+- MCP connections are managed through `AsyncExitStack` for proper cleanup
+
+## Environment Requirements
+- Python 3.10+ (configured for 3.13+ in pixi.toml)
+- `ANTHROPIC_API_KEY` environment variable
+- Pixi package manager for dependency management

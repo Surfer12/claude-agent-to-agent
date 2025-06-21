@@ -72,6 +72,8 @@ claude-agent --interactive --api-key your_api_key_here
 - `think`: A tool for internal reasoning
 - `file_read`: A tool for reading files and listing directories
 - `file_write`: A tool for writing and editing files
+- `computer_use`: A tool for desktop interaction via screenshots and input control (Beta)
+- `code_execution`: A tool for executing Python code in a secure sandbox environment (Beta)
 - MCP-based tools: Connect to MCP servers for additional capabilities
 
 ## Environment Variables
@@ -92,7 +94,101 @@ claude-agent --prompt "List all Python files in the current directory" --tools f
 
 # Connect to an MCP server for additional capabilities
 claude-agent --interactive --mcp-server http://localhost:8080
+
+# Use computer use tool with custom display settings
+claude-agent --interactive --tools computer_use --display-width 1280 --display-height 800
+
+# Computer use with specific tool version
+claude-agent --interactive --tools computer_use --computer-tool-version computer_20241022
+
+# Use code execution tool
+claude-agent --interactive --tools code_execution
+
+# Code execution with file support
+claude-agent --interactive --tools code_execution --enable-file-support
 ```
+
+### Computer Use Tool Usage
+
+```bash
+# Enable computer use tool with default settings
+claude-agent --interactive --tools computer_use
+
+# Configure display dimensions
+claude-agent --interactive --tools computer_use --display-width 1280 --display-height 800
+
+# Use specific tool version for Claude Sonnet 3.5
+claude-agent --interactive --tools computer_use --computer-tool-version computer_20241022
+
+# Use with specific display number (X11 environments)
+claude-agent --interactive --tools computer_use --display-number 1
+
+# Example prompts for computer use:
+# "Take a screenshot of the current desktop"
+# "Click on the button at coordinates 100, 200"
+# "Type 'Hello World' into the current window"
+# "Press Ctrl+C to copy"
+# "Scroll down 3 times in the current window"
+```
+
+## Code Execution Tool (Beta)
+
+The code execution tool allows Claude to execute Python code in a secure, sandboxed environment. Claude can analyze data, create visualizations, perform complex calculations, and process uploaded files directly within the API conversation.
+
+### Supported Models
+
+The code execution tool is available on:
+- Claude Opus 4 (`claude-opus-4-20250514`)
+- Claude Sonnet 4 (`claude-sonnet-4-20250514`)
+- Claude Sonnet 3.7 (`claude-3-7-sonnet-20250219`)
+- Claude Haiku 3.5 (`claude-3-5-haiku-latest`)
+
+### Features
+
+- **Secure sandbox**: Code runs in an isolated Linux container
+- **Pre-installed libraries**: pandas, numpy, matplotlib, scikit-learn, and more
+- **File processing**: Support for CSV, Excel, JSON, images, and other formats
+- **Data visualization**: Create charts and graphs with matplotlib
+- **No internet access**: Completely isolated for security
+
+### Runtime Environment
+
+- **Python version**: 3.11.12
+- **Memory**: 1GiB RAM
+- **Disk space**: 5GiB workspace storage
+- **CPU**: 1 CPU
+- **Container lifetime**: 1 hour
+
+### Usage Examples
+
+```bash
+# Enable code execution tool
+claude-agent --interactive --tools code_execution
+
+# With file upload support
+claude-agent --interactive --tools code_execution --enable-file-support
+
+# Example prompts for code execution:
+# "Calculate the mean and standard deviation of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]"
+# "Create a matplotlib chart showing sales data over time"
+# "Analyze this CSV file and provide summary statistics"
+# "Generate a random dataset and perform linear regression"
+```
+
+### Pre-installed Libraries
+
+- **Data Science**: pandas, numpy, scipy, scikit-learn, statsmodels
+- **Visualization**: matplotlib
+- **File Processing**: pyarrow, openpyxl, xlrd, pillow
+- **Math & Computing**: sympy, mpmath
+- **Utilities**: tqdm, python-dateutil, pytz, joblib
+
+### Pricing
+
+Code execution usage is tracked separately from token usage:
+- **Pricing**: $0.05 per session-hour
+- **Minimum billing**: 5 minutes per session
+- **File preloading**: Billed even if tool isn't used when files are included
 
 ## Requirements
 
@@ -100,6 +196,7 @@ claude-agent --interactive --mcp-server http://localhost:8080
 - Anthropic API key
 - `anthropic` Python library
 
+<<<<<<< HEAD
 # Anthropic API Client
 
 This project provides both Java and Python implementations for interacting with the Anthropic API. It includes examples of basic message creation, multi-turn conversations, and tool usage.
@@ -234,3 +331,110 @@ message = client.messages.create(
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+=======
+## Computer Use Tool (Beta)
+
+The computer use tool enables Claude to interact with desktop environments through screenshot capabilities and mouse/keyboard control for autonomous desktop interaction.
+
+### Beta Requirements
+
+Computer use requires a beta header based on your Claude model:
+- "computer-use-2025-01-24" (Claude 4 and 3.7 models)
+- "computer-use-2024-10-22" (Claude Sonnet 3.5)
+
+### Features
+
+- Screenshot capture: View current display content
+- Mouse control: Click, drag, and cursor movement
+- Keyboard input: Text entry and keyboard shortcuts
+- Desktop automation: Interact with applications and interfaces
+
+### Model Compatibility
+
+| Model | Tool Version | Beta Flag |
+|-------|--------------|-----------|
+| Claude 4 Opus & Sonnet | computer_20250124 | computer-use-2025-01-24 |
+| Claude Sonnet 3.7 | computer_20250124 | computer-use-2025-01-24 |
+| Claude Sonnet 3.5 | computer_20241022 | computer-use-2024-10-22 |
+
+### Security Considerations
+
+- Use dedicated virtual machines or containers with minimal privileges
+- Avoid exposing sensitive data or credentials
+- Limit internet access to allowlisted domains
+- Require human confirmation for consequential actions
+- Implement safeguards against prompt injection
+
+### Quick Start
+
+```python
+import anthropic
+
+client = anthropic.Anthropic()
+
+response = client.beta.messages.create(
+    model="claude-sonnet-4-20250514",  
+    max_tokens=1024,
+    tools=[
+        {
+          "type": "computer_20250124",
+          "name": "computer",
+          "display_width_px": 1024,
+          "display_height_px": 768,
+          "display_number": 1,
+        }
+    ],
+    messages=[{"role": "user", "content": "Take a screenshot of the desktop"}],
+    betas=["computer-use-2025-01-24"]
+)
+```
+
+### Available Actions
+
+Basic actions (all versions):
+- screenshot: Capture current display
+- left_click: Click at coordinates [x, y]
+- type: Enter text string
+- key: Press key or key combination
+- mouse_move: Move cursor to coordinates
+
+Enhanced actions (computer_20250124):
+- scroll: Directional scrolling with amount control
+- left_click_drag: Click and drag between coordinates
+- right_click, middle_click: Additional mouse buttons
+- double_click, triple_click: Multiple clicks
+- left_mouse_down, left_mouse_up: Fine-grained click control
+- hold_key: Hold keys while performing other actions
+- wait: Add pauses between actions
+
+### Tool Parameters
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| type | Yes | Tool version (computer_20250124 or computer_20241022) |
+| name | Yes | Must be "computer" |
+| display_width_px | Yes | Display width in pixels |
+| display_height_px | Yes | Display height in pixels |
+| display_number | No | Display number for X11 environments |
+
+Note: Keep display resolution at or below 1280x800 (WXGA) for optimal performance.
+
+### Limitations
+
+- Latency in human-AI interactions
+- Computer vision accuracy and reliability
+- Tool selection accuracy
+- Scrolling reliability (improved in newer versions)
+- Spreadsheet interaction challenges
+- Limited social platform interaction
+- Potential vulnerabilities to prompt injection
+
+### Pricing
+
+Computer use follows standard tool use pricing with additional considerations:
+- System prompt overhead: 466-499 tokens
+- Tool definition tokens:
+  - Claude 4 / Sonnet 3.7: 735 tokens
+  - Claude Sonnet 3.5: 683 tokens
+- Additional costs for screenshots and tool execution results
+>>>>>>> e1c1057 (add)

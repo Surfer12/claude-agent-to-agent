@@ -3,25 +3,15 @@
 import asyncio
 import os
 from contextlib import AsyncExitStack
-from dataclasses import dataclass
 from typing import Any
 
 from anthropic import Anthropic
 
-from .tools.base import Tool
-from .utils.connections import setup_mcp_connections
-from .utils.history_util import MessageHistory
-from .utils.tool_util import execute_tools
-
-
-@dataclass
-class ModelConfig:
-    """Configuration settings for Claude model parameters."""
-
-    model: str = "claude-sonnet-4-20250514"
-    max_tokens: int = 4096
-    temperature: float = 1.0
-    context_window_tokens: int = 180000
+from ..tools.base import Tool
+from ..tools.mcp.connections import setup_mcp_connections
+from .history import MessageHistory
+from .config import AgentConfig, ModelConfig
+from ..utils.tool_util import execute_tools
 
 
 class Agent:
@@ -29,42 +19,34 @@ class Agent:
 
     def __init__(
         self,
-        name: str,
-        system: str,
+        config: AgentConfig | None = None,
         tools: list[Tool] | None = None,
-        mcp_servers: list[dict[str, Any]] | None = None,
-        config: ModelConfig | None = None,
-        verbose: bool = False,
         client: Anthropic | None = None,
         message_params: dict[str, Any] | None = None,
     ):
         """Initialize an Agent.
         
         Args:
-            name: Agent identifier for logging
-            system: System prompt for the agent
-            tools: List of tools available to the agent
-            mcp_servers: MCP server configurations
-            config: Model configuration with defaults
-            verbose: Enable detailed logging
+            config: Agent configuration with defaults
+            tools: List of tools available to the agent (overrides config)
             client: Anthropic client instance
             message_params: Additional parameters for client.messages.create().
                            These override any conflicting parameters from config.
         """
-        self.name = name
-        self.system = system
-        self.verbose = verbose
+        self.config = config or AgentConfig()
+        self.name = self.config.name
+        self.system = self.config.system_prompt
+        self.verbose = self.config.verbose
         self.tools = list(tools or [])
-        self.config = config or ModelConfig()
-        self.mcp_servers = mcp_servers or []
+        self.mcp_servers = [{"url": url} for url in self.config.mcp_servers]
         self.message_params = message_params or {}
         self.client = client or Anthropic(
-            api_key=os.environ.get("ANTHROPIC_API_KEY", "")
+            api_key=self.config.api_key or os.environ.get("ANTHROPIC_API_KEY", "")
         )
         self.history = MessageHistory(
-            model=self.config.model,
+            model=self.config.model_config.model,
             system=self.system,
-            context_window_tokens=self.config.context_window_tokens,
+            context_window_tokens=self.config.model_config.context_window_tokens,
             client=self.client,
         )
 
@@ -78,9 +60,9 @@ class Agent:
         message_params overriding conflicting keys.
         """
         params = {
-            "model": self.config.model,
-            "max_tokens": self.config.max_tokens,
-            "temperature": self.config.temperature,
+            "model": self.config.model_config.model,
+            "max_tokens": self.config.model_config.max_tokens,
+            "temperature": self.config.model_config.temperature,
             "system": self.system,
             "messages": self.history.format_for_api(),
             "tools": [tool.to_dict() for tool in self.tools],
@@ -93,7 +75,7 @@ class Agent:
         # Add beta headers for computer use tools
         computer_tools = [tool for tool in self.tools if hasattr(tool, 'tool_version') and tool.name == 'computer']
         if computer_tools:
-            model = self.config.model.lower()
+            model = self.config.model_config.model.lower()
             tool_version = computer_tools[0].tool_version
             
             if "claude-4" in model or "claude-sonnet-3.7" in model or "claude-sonnet-4" in model:
