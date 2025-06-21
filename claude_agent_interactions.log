@@ -1,0 +1,4 @@
+2025-06-21 01:09:38,041 | INFO | HTTP Request: POST https://api.anthropic.com/v1/messages/count_tokens "HTTP/1.1 200 OK"
+2025-06-21 01:09:38,206 | INFO | HTTP Request: POST https://api.anthropic.com/v1/messages?beta=true "HTTP/1.1 400 Bad Request"
+2025-06-21 01:09:47,798 | INFO | HTTP Request: POST https://api.anthropic.com/v1/messages/count_tokens "HTTP/1.1 200 OK"
+2025-06-21 01:09:49,934 | INFO | HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
