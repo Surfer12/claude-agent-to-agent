@@ -39,8 +39,8 @@ cd java/
 mvn clean package
 
 # Use CLI
-export ANTHROPIC_API_KEY="your-api-key"
-java -jar target/claude-agent-framework-1.0.0.jar interactive
+export ANTHROPIC_API_KEY='your-api-key'
+java -jar target/claude-agent-framework-1.0.0.jar -v interactive
 
 # Use programmatically
 AgentConfig config = AgentConfig.builder()
@@ -108,7 +108,7 @@ claude-agent list-tools
 claude-agent interactive --tools think,file_read
 claude-agent chat --prompt "What tools do you have?"
 
-# Java  
+# Java
 java -jar claude-agent.jar list-tools
 java -jar claude-agent.jar interactive -t think,file_read
 java -jar claude-agent.jar chat -p "What tools do you have?"

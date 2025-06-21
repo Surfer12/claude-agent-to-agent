@@ -1,0 +1,11 @@
+agent:
+  name: claude-agent
+  system_prompt: "You are Claude, an AI assistant. Be concise and helpful."
+  verbose: false
+model:
+  model: claude-sonnet-4-20250514
+  max_tokens: 4096
+  temperature: 1.0
+tools:
+  enabled:
+    - all
