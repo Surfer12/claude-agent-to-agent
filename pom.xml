@@ -16,11 +16,18 @@
     </properties>
 
     <dependencies>
-        <!-- HTTP Client -->
+        <!-- HTTP Client - Updated to latest version with security fixes -->
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>4.12.0</version>
+        </dependency>
+        
+        <!-- Explicitly override Okio to patched version -->
+        <dependency>
+            <groupId>com.squareup.okio</groupId>
+            <artifactId>okio</artifactId>
+            <version>3.4.0</version>
         </dependency>
         
         <!-- JSON Processing -->

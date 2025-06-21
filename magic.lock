@@ -161,6 +161,8 @@ packages:
   - python >=3.13,<3.14.0a0 *_cp313
   - python_abi 3.13.* *_cp313
   - yarl >=1.17.0,<2.0
+  arch: arm64
+  platform: osx
   license: MIT AND Apache-2.0
   license_family: Apache
   size: 984733
@@ -828,6 +830,8 @@ packages:
   md5: ff65d61af5958c988bbf1dadacaa265e
   depends:
   - openjdk
+  arch: arm64
+  platform: osx
   license: Apache-2.0
   license_family: APACHE
   size: 8595833
@@ -1071,6 +1075,8 @@ packages:
   - libcxx >=16
   constrains:
   - __osx >=11.0
+  arch: arm64
+  platform: osx
   license: BSD-3-Clause
   license_family: BSD
   size: 23090925
@@ -1212,6 +1218,8 @@ packages:
   - readline >=8.2,<9.0a0
   - tk >=8.6.13,<8.7.0a0
   - tzdata
+  arch: arm64
+  platform: osx
   license: Python-2.0
   size: 12931515
   timestamp: 1750062475020

@@ -21,16 +21,23 @@
         <junit.version>5.9.2</junit.version>
         <mockito.version>5.1.1</mockito.version>
         <jackson.version>2.15.2</jackson.version>
-        <okhttp.version>4.11.0</okhttp.version>
+        <okhttp.version>4.12.0</okhttp.version>
         <picocli.version>4.7.1</picocli.version>
     </properties>
     
     <dependencies>
-        <!-- HTTP Client -->
+        <!-- HTTP Client - Updated to latest version with security fixes -->
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>${okhttp.version}</version>
+        </dependency>
+        
+        <!-- Explicitly override Okio to patched version -->
+        <dependency>
+            <groupId>com.squareup.okio</groupId>
+            <artifactId>okio</artifactId>
+            <version>3.4.0</version>
         </dependency>
         
         <!-- JSON Processing -->
