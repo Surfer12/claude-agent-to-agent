@@ -162,13 +162,7 @@ class CognitiveAgentCLI:
 
                     # Output response with cognitive performance context
                     print("\n🤖 Response:")
-                    if hasattr(response, 'content'):
-                        for content in response.content:
-                            if hasattr(content, 'text'):
-                                print(content.text)
-                    else:
-                        # Handle case where response is a list or other format
-                        print(str(response))
+                    print(format_response(response))
 
                 except Exception as interaction_error:
                     logger.error(f"Interaction Error: {interaction_error}")

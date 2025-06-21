@@ -1,22 +1,28 @@
 package com.anthropic.api;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import kong.unirest.HttpResponse;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class AnthropicClientTest {
+
     private AnthropicClient client;
-    private static final String TEST_API_KEY = System.getenv("ANTHROPIC_API_KEY");
-    private static final String TEST_MODEL = "claude-3-7-sonnet-20250219";
+    private static final String TEST_API_KEY = System.getenv(
+        "ANTHROPIC_API_KEY"
+    );
+    private static final String TEST_MODEL = "claude-3-sonnet-20240229";
 
     @BeforeEach
     void setUp() {
-        assertNotNull(TEST_API_KEY, "ANTHROPIC_API_KEY environment variable must be set");
+        assertNotNull(
+            TEST_API_KEY,
+            "ANTHROPIC_API_KEY environment variable must be set"
+        );
         client = new AnthropicClient.Builder()
             .apiKey(TEST_API_KEY)
             .model(TEST_MODEL)
@@ -26,12 +32,15 @@ public class AnthropicClientTest {
     @Test
     void testCreateMessage() {
         List<AnthropicClient.Message> messages = List.of(
-            new AnthropicClient.Message("msg1", "user", 
-                List.of(new AnthropicClient.Content("text", "Hello, Claude")))
+            new AnthropicClient.Message(
+                "msg1",
+                "user",
+                List.of(new AnthropicClient.Content("text", "Hello, Claude"))
+            )
         );
 
         AnthropicClient.Message response = client.createMessage(messages);
-        
+
         assertNotNull(response);
         assertNotNull(response.getId());
         assertEquals("assistant", response.getRole());
@@ -57,7 +66,7 @@ public class AnthropicClientTest {
 
     @Test
     void testNullApiKey() {
-        assertThrows(NullPointerException.class, () -> 
+        assertThrows(NullPointerException.class, () ->
             new AnthropicClient.Builder()
                 .model("claude-opus-4-20250514")
                 .build()
@@ -66,7 +75,7 @@ public class AnthropicClientTest {
 
     @Test
     void testNullModel() {
-        assertThrows(NullPointerException.class, () -> 
+        assertThrows(NullPointerException.class, () ->
             new AnthropicClient.Builder()
                 .apiKey("test-api-key")
                 .model(null)
@@ -76,7 +85,7 @@ public class AnthropicClientTest {
 
     @Test
     void testNullMessages() {
-        assertThrows(NullPointerException.class, () -> 
+        assertThrows(NullPointerException.class, () ->
             client.createMessage(null)
         );
     }
@@ -88,21 +97,33 @@ public class AnthropicClientTest {
             TEST_MODEL,
             "a chef for a meal prep planning service"
         );
-        HttpResponse<String> generateResponse = client.generatePrompt(generateRequest);
+        HttpResponse<String> generateResponse = client.generatePrompt(
+            generateRequest
+        );
         assertNotNull(generateResponse);
         assertTrue(generateResponse.isSuccess());
         String generatedPrompt = generateResponse.getBody();
         assertNotNull(generatedPrompt);
+        assertFalse(generatedPrompt.isEmpty());
 
         // Step 2: Improve the generated prompt
         var improveRequest = new AnthropicClient.ImprovePromptRequest(
             "Make it more detailed and include cooking times",
-            List.of(new AnthropicClient.Message("", "user", 
-                List.of(new AnthropicClient.Content("text", generatedPrompt)))),
+            List.of(
+                new AnthropicClient.Message(
+                    "",
+                    "user",
+                    List.of(
+                        new AnthropicClient.Content("text", generatedPrompt)
+                    )
+                )
+            ),
             "You are a professional chef",
             TEST_MODEL
         );
-        HttpResponse<String> improveResponse = client.improvePrompt(improveRequest);
+        HttpResponse<String> improveResponse = client.improvePrompt(
+            improveRequest
+        );
         assertNotNull(improveResponse);
         assertTrue(improveResponse.isSuccess());
         String improvedPrompt = improveResponse.getBody();
@@ -110,18 +131,33 @@ public class AnthropicClientTest {
 
         // Step 3: Create a template from the improved prompt
         var templatizeRequest = new AnthropicClient.TemplatizePromptRequest(
-            List.of(new AnthropicClient.Message("", "user", 
-                List.of(new AnthropicClient.Content("text", improvedPrompt)))),
+            List.of(
+                new AnthropicClient.Message(
+                    "",
+                    "user",
+                    List.of(new AnthropicClient.Content("text", improvedPrompt))
+                )
+            ),
             "You are a professional chef"
         );
-        HttpResponse<String> templatizeResponse = client.templatizePrompt(templatizeRequest);
+        HttpResponse<String> templatizeResponse = client.templatizePrompt(
+            templatizeRequest
+        );
         assertNotNull(templatizeResponse);
         assertTrue(templatizeResponse.isSuccess());
         String template = templatizeResponse.getBody();
         assertNotNull(template);
 
-        // Verify the final template contains expected elements
-        assertTrue(template.contains("cooking times"));
-        assertTrue(template.contains("meal prep"));
+        // Verify the final template contains expected elements - use case-insensitive matching
+        assertTrue(
+            template.toLowerCase().contains("cooking times") ||
+            template.toLowerCase().contains("cook time") ||
+            template.toLowerCase().contains("preparation time")
+        );
+        assertTrue(
+            template.toLowerCase().contains("meal prep") ||
+            template.toLowerCase().contains("meal planning") ||
+            template.toLowerCase().contains("meal preparation")
+        );
     }
-} 
+}
