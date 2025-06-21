@@ -196,7 +196,6 @@ Code execution usage is tracked separately from token usage:
 - Anthropic API key
 - `anthropic` Python library
 
-<<<<<<< HEAD
 # Anthropic API Client
 
 This project provides both Java and Python implementations for interacting with the Anthropic API. It includes examples of basic message creation, multi-turn conversations, and tool usage.
@@ -293,7 +292,7 @@ AnthropicClient client = new AnthropicClient.Builder()
     .build();
 
 List<AnthropicClient.Message> messages = List.of(
-    new AnthropicClient.Message("msg1", "user", 
+    new AnthropicClient.Message("msg1", "user",
         List.of(new AnthropicClient.Content("text", "Hello, Claude")))
 );
 
@@ -331,7 +330,6 @@ message = client.messages.create(
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-=======
 ## Computer Use Tool (Beta)
 
 The computer use tool enables Claude to interact with desktop environments through screenshot capabilities and mouse/keyboard control for autonomous desktop interaction.
@@ -373,7 +371,7 @@ import anthropic
 client = anthropic.Anthropic()
 
 response = client.beta.messages.create(
-    model="claude-sonnet-4-20250514",  
+    model="claude-sonnet-4-20250514",
     max_tokens=1024,
     tools=[
         {
@@ -437,4 +435,3 @@ Computer use follows standard tool use pricing with additional considerations:
   - Claude 4 / Sonnet 3.7: 735 tokens
   - Claude Sonnet 3.5: 683 tokens
 - Additional costs for screenshots and tool execution results
->>>>>>> e1c1057 (add)
