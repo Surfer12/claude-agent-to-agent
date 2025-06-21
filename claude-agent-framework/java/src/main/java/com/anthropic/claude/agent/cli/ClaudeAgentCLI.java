@@ -220,77 +220,83 @@ public class ClaudeAgentCLI implements Callable<Integer> {
                 );
                 System.out.println("Type 'help' for more commands.");
                 System.out.println("-".repeat(50));
-
                 Scanner scanner = new Scanner(System.in);
+                try {
+                    while (true) {
+                        System.out.print("\nYou: ");
+                        String input = scanner.nextLine();
 
-                while (true) {
-                    System.out.print("\nYou: ");
-                    String input = scanner.nextLine();
-
-                    if (input.toLowerCase().matches("exit|quit")) {
-                        System.out.println("Ending session.");
-                        break;
-                    }
-
-                    if (input.toLowerCase().equals("clear")) {
-                        agent.clearHistory();
-                        System.out.println("Conversation history cleared.");
-                        continue;
-                    }
-
-                    if (input.toLowerCase().equals("help")) {
-                        System.out.println("Commands:");
-                        System.out.println("  exit, quit - End the session");
-                        System.out.println(
-                            "  clear - Clear conversation history"
-                        );
-                        System.out.println("  help - Show this help");
-                        continue;
-                    }
-
-                    if (input.trim().isEmpty()) {
-                        continue;
-                    }
-
-                    try {
-                        AgentResponse response = agent.chatSync(input);
-                        System.out.println(
-                            "\nClaude: " + response.getTextContent()
-                        );
-                    } catch (Exception e) {
-                        System.err.println("\nError: " + e.getMessage());
-                        if (e.getCause() != null) {
-                            System.err.println(
-                                "Caused by: " + e.getCause().getMessage()
-                            );
+                        if (input.toLowerCase().matches("exit|quit")) {
+                            System.out.println("Ending session.");
+                            break;
                         }
-                        if (config.isVerbose()) {
-                            e.printStackTrace();
+
+                        if (input.toLowerCase().equals("clear")) {
+                            agent.clearHistory();
+                            System.out.println("Conversation history cleared.");
+                            continue;
                         }
-                        // Common troubleshooting hints
-                        if (
-                            e.getMessage() != null &&
-                            e.getMessage().contains("Failed to get response")
-                        ) {
-                            System.err.println("\nTroubleshooting tips:");
-                            System.err.println(
-                                "- Check that ANTHROPIC_API_KEY environment variable is set"
+
+                        if (input.toLowerCase().equals("help")) {
+                            System.out.println("Commands:");
+                            System.out.println(
+                                "  exit, quit - End the session"
                             );
-                            System.err.println(
-                                "- Verify your API key is valid"
+                            System.out.println(
+                                "  clear - Clear conversation history"
                             );
-                            System.err.println(
-                                "- Check your internet connection"
+                            System.out.println("  help - Show this help");
+                            continue;
+                        }
+
+                        if (input.trim().isEmpty()) {
+                            continue;
+                        }
+
+                        try {
+                            AgentResponse response = agent.chatSync(input);
+                            System.out.println(
+                                "\nClaude: " + response.getTextContent()
                             );
-                            System.err.println(
-                                "- Run with --verbose flag for more details"
-                            );
+                        } catch (Exception e) {
+                            System.err.println("\nError: " + e.getMessage());
+                            if (e.getCause() != null) {
+                                System.err.println(
+                                    "Caused by: " + e.getCause().getMessage()
+                                );
+                            }
+                            if (config.isVerbose()) {
+                                e.printStackTrace();
+                            }
+                            // Common troubleshooting hints
+                            if (
+                                e.getMessage() != null &&
+                                e
+                                    .getMessage()
+                                    .contains("Failed to get response")
+                            ) {
+                                System.err.println("\nTroubleshooting tips:");
+                                System.err.println(
+                                    "- Check that ANTHROPIC_API_KEY environment variable is set"
+                                );
+                                System.err.println(
+                                    "- Verify your API key is valid"
+                                );
+                                System.err.println(
+                                    "- Check your internet connection"
+                                );
+                                System.err.println(
+                                    "- Run with --verbose flag for more details"
+                                );
+                            }
                         }
                     }
+
+                    agent.close();
+                    return 0;
+                } finally {
+                    scanner.close();
                 }
-
-                agent.close();
-                return 0;
             } catch (Exception e) {
                 System.err.println("Error: " + e.getMessage());
                 return 1;
@@ -357,7 +363,12 @@ public class ClaudeAgentCLI implements Callable<Integer> {
             if (allToolConfig.containsKey(toolName)) {
                 Object toolConfig = allToolConfig.get(toolName);
                 if (toolConfig instanceof Map) {
-                    return (Map<String, Object>) toolConfig;
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> typedToolConfig = (Map<
+                            String,
+                            Object
+                        >) toolConfig;
+                    return typedToolConfig;
                 }
             }
             return new HashMap<>();
