@@ -26,14 +26,22 @@
     </properties>
     
     <dependencies>
-        <!-- HTTP Client - Updated to latest version with security fixes -->
+        <!-- SECURITY FIX: Updated OkHttp from 4.11.0 to 4.12.0 to address Okio vulnerability -->
+        <!-- CVE-2023-3635: Okio Signed to Unsigned Conversion Error vulnerability -->
+        <!-- Affected versions: >= 2.0.0-RC1, < 3.4.0 -->
+        <!-- Patched version: 3.4.0 -->
+        <!-- Impact: Denial of service when parsing malformed gzip buffers -->
+        <!-- Fix: Updated to OkHttp 4.12.0 which includes Okio 3.4.0+ -->
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>${okhttp.version}</version>
         </dependency>
         
-        <!-- Explicitly override Okio to patched version -->
+        <!-- SECURITY FIX: Explicitly override Okio to patched version -->
+        <!-- This ensures we use the secure version regardless of transitive dependencies -->
+        <!-- CVE-2023-3635: GzipSource does not handle exceptions when parsing malformed gzip buffers -->
+        <!-- This may lead to denial of service of the Okio client when handling crafted GZIP archives -->
         <dependency>
             <groupId>com.squareup.okio</groupId>
             <artifactId>okio</artifactId>
