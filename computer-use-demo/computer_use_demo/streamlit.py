@@ -24,6 +24,10 @@ from anthropic.types.beta import (
     BetaToolResultBlockParam,
 )
 from streamlit.delta_generator import DeltaGenerator
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+import platform
 
 from computer_use_demo.loop import (
     APIProvider,
@@ -391,29 +395,64 @@ def validate_auth(provider: APIProvider, api_key: str | None):
             return "Your google cloud credentials are not set up correctly."
 
 
-def load_from_storage(filename: str) -> str | None:
-    """Load data from a file in the storage directory."""
+def get_encryption_key():
+    """Generate encryption key from machine-specific data."""
     try:
-        file_path = CONFIG_DIR / filename
-        if file_path.exists():
-            data = file_path.read_text().strip()
-            if data:
-                return data
-    except Exception as e:
-        st.write(f"Debug: Error loading {filename}: {e}")
-    return None
+        # Use machine-specific data as salt
+        salt = platform.node().encode()
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=100000,
+        )
+        key = base64.urlsafe_b64encode(kdf.derive(b"claude-agent-framework"))
+        return Fernet(key)
+    except Exception:
+        return None
 
 
 def save_to_storage(filename: str, data: str) -> None:
-    """Save data to a file in the storage directory."""
+    """Save encrypted data to a file in the storage directory."""
     try:
         CONFIG_DIR.mkdir(parents=True, exist_ok=True)
         file_path = CONFIG_DIR / filename
+        
+        # Encrypt sensitive data
+        if filename == "api_key" and data:
+            fernet = get_encryption_key()
+            if fernet:
+                data = fernet.encrypt(data.encode()).decode()
+        
         file_path.write_text(data)
         # Ensure only user can read/write the file
         file_path.chmod(0o600)
     except Exception as e:
-        st.write(f"Debug: Error saving {filename}: {e}")
+        st.write(f"Error saving {filename}: {str(e)}")
+
+
+def load_from_storage(filename: str) -> str:
+    """Load and decrypt data from storage."""
+    try:
+        file_path = CONFIG_DIR / filename
+        if not file_path.exists():
+            return ""
+            
+        data = file_path.read_text()
+        
+        # Decrypt sensitive data
+        if filename == "api_key" and data:
+            fernet = get_encryption_key()
+            if fernet:
+                try:
+                    data = fernet.decrypt(data.encode()).decode()
+                except Exception:
+                    # Invalid encryption, return empty
+                    return ""
+                    
+        return data
+    except Exception:
+        return ""
 
 
 def _api_response_callback(

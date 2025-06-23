@@ -3,9 +3,40 @@
 import asyncio
 import glob
 import os
+import re
 from pathlib import Path
+from typing import Optional
 
 from .base import Tool
+
+# Security constants
+MAX_FILE_SIZE = 1024 * 1024  # 1MB
+SAFE_PATH_PATTERN = re.compile(r'^[a-zA-Z0-9_\-./]+$')
+BLOCKED_EXTENSIONS = {'.exe', '.dll', '.so', '.dylib', '.sh', '.bat', '.cmd', '.ps1'}
+
+def validate_path(path: str) -> Optional[str]:
+    """Validate file path for security.
+    
+    Args:
+        path: File path to validate
+        
+    Returns:
+        Error message if validation fails, None if path is safe
+    """
+    # Check for path traversal
+    try:
+        path = os.path.abspath(path)
+        if '..' in path or not SAFE_PATH_PATTERN.match(path):
+            return "Invalid characters in path"
+    except Exception:
+        return "Invalid path format"
+        
+    # Check file extension
+    ext = os.path.splitext(path)[1].lower()
+    if ext in BLOCKED_EXTENSIONS:
+        return f"File extension {ext} is not allowed"
+        
+    return None
 
 
 class FileReadTool(Tool):
@@ -72,31 +103,40 @@ class FileReadTool(Tool):
             return f"Error: Unsupported operation '{operation}'"
 
     async def _read_file(self, path: str, max_lines: int = 0) -> str:
-        """Read a file from disk.
-        
-        Args:
-            path: Path to the file to read
-            max_lines: Maximum number of lines to read (0 means read entire file)
-        """
+        """Read a file from disk securely."""
         try:
+            # Validate path
+            error = validate_path(path)
+            if error:
+                return f"Error: {error}"
+                
             file_path = Path(path)
-
+            
             if not file_path.exists():
                 return f"Error: File not found at {path}"
             if not file_path.is_file():
                 return f"Error: {path} is not a file"
-
+            if not file_path.is_relative_to(Path.cwd()):
+                return f"Error: Path {path} is outside working directory"
+            if not os.access(file_path, os.R_OK):
+                return f"Error: No read permission for {path}"
+                
+            # Check file size
+            size = file_path.stat().st_size
+            if size > MAX_FILE_SIZE:
+                return f"Error: File too large (>{MAX_FILE_SIZE} bytes): {path}"
+                
             def read_sync():
-                with open(file_path, encoding="utf-8", errors="replace") as f:
+                with open(file_path, encoding='utf-8', errors='replace') as f:
                     if max_lines > 0:
                         lines = []
                         for i, line in enumerate(f):
                             if i >= max_lines:
                                 break
                             lines.append(line)
-                        return "".join(lines)
+                        return ''.join(lines)
                     return f.read()
-
+                    
             return await asyncio.to_thread(read_sync)
         except Exception as e:
             return f"Error reading {path}: {str(e)}"
@@ -212,19 +252,38 @@ class FileWriteTool(Tool):
             return f"Error: Unsupported operation '{operation}'"
 
     async def _write_file(self, path: str, content: str) -> str:
-        """Write content to a file."""
+        """Write content to a file securely."""
         try:
+            # Validate path
+            error = validate_path(path)
+            if error:
+                return f"Error: {error}"
+                
             file_path = Path(path)
-            os.makedirs(file_path.parent, exist_ok=True)
-
+            
+            # Create parent dirs if needed
+            parent = file_path.parent
+            if not parent.exists():
+                os.makedirs(parent)
+                
+            if file_path.exists() and not os.access(file_path, os.W_OK):
+                return f"Error: No write permission for {path}"
+                
             def write_sync():
-                with open(file_path, "w", encoding="utf-8") as f:
-                    f.write(content)
-                return (
-                    f"Successfully wrote {len(content)} "
-                    f"characters to {path}"
-                )
-
+                # Write atomically using temporary file
+                tmp_path = str(file_path) + '.tmp'
+                try:
+                    with open(tmp_path, 'w', encoding='utf-8') as f:
+                        f.write(content)
+                    os.replace(tmp_path, file_path)
+                finally:
+                    try:
+                        os.unlink(tmp_path)
+                    except OSError:
+                        pass
+                        
+                return f"Successfully wrote {len(content)} characters to {path}"
+                
             return await asyncio.to_thread(write_sync)
         except Exception as e:
             return f"Error writing to {path}: {str(e)}"

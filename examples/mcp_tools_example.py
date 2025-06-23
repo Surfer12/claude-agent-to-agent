@@ -8,6 +8,9 @@ import asyncio
 import tempfile
 import subprocess
 from pathlib import Path
+import ast
+import operator
+import math
 
 # Make sure parent directory is in path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -15,6 +18,82 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from agents.agent import Agent, ModelConfig
 from agents.tools.think import ThinkTool
 from agents.tools.file_tools import FileReadTool, FileWriteTool
+
+
+# Safe mathematical expression evaluator
+class SafeMathEvaluator:
+    """Secure mathematical expression evaluator."""
+    
+    # Allowed operators
+    operators = {
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,
+        ast.Pow: operator.pow,
+        ast.BitXor: operator.xor,
+        ast.USub: operator.neg,
+    }
+    
+    # Allowed functions
+    functions = {
+        'abs': abs,
+        'round': round,
+        'int': int,
+        'float': float,
+        'max': max,
+        'min': min,
+        'sum': sum,
+        'sin': math.sin,
+        'cos': math.cos,
+        'tan': math.tan,
+        'sqrt': math.sqrt,
+        'exp': math.exp,
+        'log': math.log,
+        'pi': math.pi,
+        'e': math.e,
+    }
+    
+    def evaluate(self, expression: str) -> float:
+        """Safely evaluate a mathematical expression."""
+        try:
+            # Parse the expression into an AST
+            node = ast.parse(expression, mode='eval')
+            return self._eval_node(node.body)
+        except Exception as e:
+            raise ValueError(f"Invalid expression: {e}")
+    
+    def _eval_node(self, node):
+        """Recursively evaluate AST nodes."""
+        if isinstance(node, ast.Constant):  # Numbers
+            return node.value
+        elif isinstance(node, ast.Name):  # Variables/constants
+            if node.id in self.functions:
+                return self.functions[node.id]
+            else:
+                raise ValueError(f"Unknown identifier: {node.id}")
+        elif isinstance(node, ast.BinOp):  # Binary operations
+            left = self._eval_node(node.left)
+            right = self._eval_node(node.right)
+            op = self.operators.get(type(node.op))
+            if op is None:
+                raise ValueError(f"Unsupported operator: {type(node.op)}")
+            return op(left, right)
+        elif isinstance(node, ast.UnaryOp):  # Unary operations
+            operand = self._eval_node(node.operand)
+            op = self.operators.get(type(node.op))
+            if op is None:
+                raise ValueError(f"Unsupported unary operator: {type(node.op)}")
+            return op(operand)
+        elif isinstance(node, ast.Call):  # Function calls
+            func_name = node.func.id if isinstance(node.func, ast.Name) else None
+            if func_name in self.functions:
+                args = [self._eval_node(arg) for arg in node.args]
+                return self.functions[func_name](*args)
+            else:
+                raise ValueError(f"Unknown function: {func_name}")
+        else:
+            raise ValueError(f"Unsupported node type: {type(node)}")
 
 
 async def main():
@@ -45,7 +124,7 @@ async def main():
         mcp_config_path = temp_file.name
     
     try:
-        # Start an MCP server (mock implementation for the example)
+        # Start an MCP server (secure implementation)
         mcp_process = subprocess.Popen(
             [
                 sys.executable,
@@ -54,22 +133,71 @@ async def main():
 import json
 import sys
 import math
+import ast
+import operator
+
+class SafeMathEvaluator:
+    operators = {{
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,
+        ast.Pow: operator.pow,
+        ast.USub: operator.neg,
+    }}
+    
+    functions = {{
+        'abs': abs, 'round': round, 'int': int, 'float': float,
+        'max': max, 'min': min, 'sum': sum,
+        'sin': math.sin, 'cos': math.cos, 'tan': math.tan,
+        'sqrt': math.sqrt, 'exp': math.exp, 'log': math.log,
+        'pi': math.pi, 'e': math.e,
+    }}
+    
+    def evaluate(self, expression):
+        try:
+            node = ast.parse(expression, mode='eval')
+            return self._eval_node(node.body)
+        except Exception as e:
+            raise ValueError(f"Invalid expression: {{e}}")
+    
+    def _eval_node(self, node):
+        if isinstance(node, ast.Constant):
+            return node.value
+        elif isinstance(node, ast.Name):
+            if node.id in self.functions:
+                return self.functions[node.id]
+            else:
+                raise ValueError(f"Unknown identifier: {{node.id}}")
+        elif isinstance(node, ast.BinOp):
+            left = self._eval_node(node.left)
+            right = self._eval_node(node.right)
+            op = self.operators.get(type(node.op))
+            if op is None:
+                raise ValueError(f"Unsupported operator: {{type(node.op)}}")
+            return op(left, right)
+        elif isinstance(node, ast.UnaryOp):
+            operand = self._eval_node(node.operand)
+            op = self.operators.get(type(node.op))
+            if op is None:
+                raise ValueError(f"Unsupported unary operator: {{type(node.op)}}")
+            return op(operand)
+        elif isinstance(node, ast.Call):
+            func_name = node.func.id if isinstance(node.func, ast.Name) else None
+            if func_name in self.functions:
+                args = [self._eval_node(arg) for arg in node.args]
+                return self.functions[func_name](*args)
+            else:
+                raise ValueError(f"Unknown function: {{func_name}}")
+        else:
+            raise ValueError(f"Unsupported node type: {{type(node)}}")
+
+evaluator = SafeMathEvaluator()
 
 def calculator(expression):
     try:
-        # Using eval is not secure for production use!
-        # This is just for the example
-        allowed_names = {
-            'abs': abs, 'pow': pow, 'round': round,
-            'int': int, 'float': float,
-            'max': max, 'min': min,
-            'sum': sum,
-            # Add math functions
-            'sin': math.sin, 'cos': math.cos, 'tan': math.tan,
-            'sqrt': math.sqrt, 'exp': math.exp, 'log': math.log,
-        }}
-        
-        result = eval(expression, {{"__builtins__": {{}}}}, allowed_names)
+        # Use secure AST-based evaluator instead of eval()
+        result = evaluator.evaluate(expression)
         return {{"content": str(result)}}
     except Exception as e:
         return {{"content": f"Error: {{str(e)}}"}}

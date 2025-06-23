@@ -1,0 +1,255 @@
+# Claude Agent Framework - Secure Configuration Template
+# Copy this file to claude-agent.yaml and customize for your environment
+
+# Agent Configuration
+agent:
+  name: "claude-agent-secure"
+  system_prompt: "You are Claude, an AI assistant. Be helpful while following security protocols."
+  verbose: false
+  
+# Model Configuration  
+model:
+  model: "claude-sonnet-4-20250514"
+  max_tokens: 4096
+  temperature: 1.0
+  context_window_tokens: 180000
+
+# Security Configuration
+security:
+  # API Key Management
+  api_key:
+    storage_method: "keyring"  # Options: keyring, encrypted_file, env_var
+    rotation_interval_days: 90
+    
+  # File Operations Security
+  file_operations:
+    allowed_directories:
+      - "/app/data"
+      - "/tmp/uploads"
+      - "/home/user/documents"
+    blocked_extensions:
+      - ".exe"
+      - ".dll" 
+      - ".so"
+      - ".dylib"
+      - ".sh"
+      - ".bat"
+      - ".cmd"
+      - ".ps1"
+    max_file_size_mb: 10
+    enable_path_validation: true
+    
+  # Command Execution Security
+  command_execution:
+    allowed_commands:
+      - "ls"
+      - "cat"
+      - "grep"
+      - "find"
+      - "head"
+      - "tail"
+    timeout_seconds: 30
+    enable_shell: false
+    
+  # Network Security
+  network:
+    require_https: true
+    verify_ssl: true
+    timeout_seconds: 30
+    allowed_domains:
+      - "api.anthropic.com"
+      - "api.example.com"
+    
+  # Resource Limits
+  resource_limits:
+    memory_limit_gb: 1
+    cpu_limit_cores: 1
+    execution_timeout_seconds: 300
+    
+  # Logging and Monitoring
+  logging:
+    enable_security_logging: true
+    log_level: "INFO"
+    log_file: "/var/log/claude-agent/security.log"
+    log_rotation_days: 30
+    
+# Tool Configuration
+tools:
+  enabled:
+    - "think"
+    - "file_read"
+    - "file_write"
+    # Computer use and code execution require special security measures
+    # - "computer_use"  # Only enable in isolated environments
+    # - "code_execution"  # Only enable with proper sandboxing
+    
+  # Tool-specific security settings
+  computer_use:
+    require_isolation: true
+    isolation_method: "docker"  # Options: docker, vm, none
+    disable_network: true
+    read_only_filesystem: true
+    session_recording: true
+    
+  code_execution:
+    sandbox_enabled: true
+    network_access: false
+    memory_limit_mb: 512
+    timeout_seconds: 300
+    allowed_modules:
+      - "math"
+      - "json"
+      - "datetime"
+      - "re"
+      - "collections"
+    
+  file_operations:
+    enable_path_validation: true
+    audit_logging: true
+    
+# MCP Server Configuration
+mcp:
+  servers:
+    # Example secure MCP server configuration
+    calculator:
+      type: "https"
+      url: "https://api.example.com/mcp/calculator"
+      authentication:
+        type: "bearer_token"
+        token_env_var: "MCP_CALCULATOR_TOKEN"
+      security:
+        verify_ssl: true
+        timeout: 30
+        rate_limit: 100  # requests per minute
+        
+    # Local MCP server (less secure)
+    # local_tools:
+    #   type: "stdio"
+    #   command: "python"
+    #   args: ["mcp_server.py"]
+    #   env:
+    #     PYTHONPATH: "/app/mcp"
+
+# Deployment Security
+deployment:
+  # Container Security
+  container:
+    run_as_non_root: true
+    user_id: 1000
+    group_id: 1000
+    read_only_root_fs: true
+    no_new_privileges: true
+    drop_capabilities:
+      - "ALL"
+    security_opt:
+      - "no-new-privileges:true"
+      
+  # Resource Constraints
+  resources:
+    memory_limit: "1Gi"
+    memory_request: "512Mi"
+    cpu_limit: "1"
+    cpu_request: "0.5"
+    
+  # Network Policies
+  network:
+    ingress_allowed: false
+    egress_allowed_domains:
+      - "api.anthropic.com"
+    block_metadata_service: true
+    
+# Environment-specific Configuration
+environments:
+  development:
+    security:
+      logging:
+        log_level: "DEBUG"
+      file_operations:
+        max_file_size_mb: 5
+        
+  staging:
+    security:
+      logging:
+        log_level: "INFO"
+      resource_limits:
+        memory_limit_gb: 2
+        
+  production:
+    security:
+      api_key:
+        storage_method: "keyring"
+        rotation_interval_days: 30
+      logging:
+        log_level: "WARN"
+        enable_security_logging: true
+      resource_limits:
+        memory_limit_gb: 4
+        cpu_limit_cores: 2
+      network:
+        require_https: true
+        verify_ssl: true
+        
+# Compliance and Auditing
+compliance:
+  # Enable compliance features
+  enable_audit_trail: true
+  data_retention_days: 90
+  encrypt_at_rest: true
+  
+  # Privacy settings
+  privacy:
+    anonymize_logs: true
+    data_minimization: true
+    consent_required: true
+    
+  # Regulatory compliance
+  frameworks:
+    - "SOC2"
+    - "GDPR"
+    - "HIPAA"  # If handling healthcare data
+    
+# Incident Response
+incident_response:
+  # Automated responses
+  auto_responses:
+    suspicious_activity:
+      action: "log_and_alert"
+      threshold: 5  # Number of violations before action
+    credential_compromise:
+      action: "revoke_and_notify"
+    resource_exhaustion:
+      action: "throttle_and_log"
+      
+  # Contact information
+  contacts:
+    security_team: "security@yourdomain.com"
+    incident_response: "incident@yourdomain.com"
+    emergency: "+1-555-SECURITY"
+    
+# Monitoring and Alerting
+monitoring:
+  # Metrics to track
+  metrics:
+    - "failed_authentication_attempts"
+    - "unusual_api_usage"
+    - "file_access_violations" 
+    - "command_execution_anomalies"
+    - "resource_usage_spikes"
+    
+  # Alert thresholds
+  alerts:
+    failed_auth_threshold: 5
+    api_rate_limit_threshold: 1000
+    memory_usage_threshold: 80  # percentage
+    
+  # Integration with monitoring systems
+  integrations:
+    prometheus:
+      enabled: false
+      endpoint: "http://prometheus:9090"
+    datadog:
+      enabled: false
+      api_key_env_var: "DATADOG_API_KEY"
+    splunk:
+      enabled: false
+      endpoint: "https://splunk.yourdomain.com" 

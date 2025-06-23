@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  claude-agent:
+    build: .
+    container_name: claude-agent
+    volumes:
+      - ./.env:/app/.env:ro
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    # Security settings
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+    # Resource limits
+    mem_limit: 1g
+    mem_reservation: 512m
+    cpus: 1.0
+    # Networking (isolated)
+    networks:
+      - claude-net
+
+networks:
+  claude-net:
+    driver: bridge
