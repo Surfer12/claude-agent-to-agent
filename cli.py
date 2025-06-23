@@ -29,11 +29,8 @@ from agents.agent import Agent, ModelConfig
 from agents.tools.think import ThinkTool
 from agents.tools.file_tools import FileReadTool, FileWriteTool
 from agents.tools.computer_use import ComputerUseTool
-from agents.tools.code_execution import (
-    CodeExecutionTool,
-    CodeExecutionWithFilesTool,
-    is_model_supported
-)
+from agents.tools.code_execution import CodeExecutionTool, CodeExecutionWithFilesTool, is_model_supported
+from agents.utils.connections import setup_mcp_connections
 
 # Configure advanced logging with cognitive performance tracking
 logging.basicConfig(
@@ -217,66 +214,49 @@ def parse_args():
         action='store_true',
         help='Enable detailed interaction logging and tracking'
     )
+    ##TODO column alignment below
     parser.add_argument(
         '--model',
         default='claude-3-5-sonnet-20240620',
         choices=[
-            'claude-3-haiku-20240307',
-            'claude-3-5-sonnet-20240620',
-            'claude-3-opus-20240229'
+           'claude-opus-4-20250514',
+            'claude-sonnet-4-20250514'
+            'claude-3-7-sonnet-20250219', 
         ],
         help='Select the Claude model for cognitive interactions'
-    )
-
-    # Input mode options
-    input_group = parser.add_mutually_exclusive_group(required=True)
-    input_group.add_argument(
-        "--interactive",
-        action="store_true",
-        help="Run in interactive mode"
-    )
-    input_group.add_argument(
-        "--prompt",
-        help="Single prompt to process"
-    )
-    input_group.add_argument(
-        "--file",
-        help="File containing prompt (use '-' for stdin)"
-    )
-
+    
     # Tool configuration
     tool_group = parser.add_argument_group("Tool options")
     tool_group.add_argument(
-        "--tools",
-        nargs="+",
-        choices=["think", "file_read", "file_write", "computer_use",
-                 "code_execution", "all"],
+        "--tools", 
+        nargs="+", 
+        choices=["think", "file_read", "file_write", "computer_use", "code_execution", "all"],
         default=["all"],
         help="Enable specific tools"
     )
     tool_group.add_argument(
-        "--mcp-server",
-        action="append",
+        "--mcp-server", 
+        action="append", 
         help="MCP server URL (can be specified multiple times)"
     )
-
+    
     # Computer use configuration
     computer_group = parser.add_argument_group("Computer use options")
     computer_group.add_argument(
-        "--display-width",
-        type=int,
-        default=1024,
+        "--display-width", 
+        type=int, 
+        default=1024, 
         help="Display width in pixels for computer use"
     )
     computer_group.add_argument(
-        "--display-height",
-        type=int,
-        default=768,
+        "--display-height", 
+        type=int, 
+        default=768, 
         help="Display height in pixels for computer use"
     )
     computer_group.add_argument(
-        "--display-number",
-        type=int,
+        "--display-number", 
+        type=int, 
         help="X11 display number for computer use"
     )
     computer_group.add_argument(
@@ -285,50 +265,51 @@ def parse_args():
         default="computer_20250124",
         help="Computer use tool version"
     )
-
+    
     # Code execution configuration
     code_group = parser.add_argument_group("Code execution options")
     code_group.add_argument(
         "--enable-file-support",
-        action='store_true',
+        action="store_true",
         help="Enable file upload support for code execution"
     )
-
+    
     # API configuration
     api_group = parser.add_argument_group("API options")
     api_group.add_argument(
-        "--api-key",
+        "--api-key", 
         help="Anthropic API key (defaults to ANTHROPIC_API_KEY env var)"
     )
-    api_group.add_argument(
-        "--max-tokens",
-        type=int,
-        default=4096,
-        help="Maximum tokens in response"
+    
+    args = parser.parse_args()
+    
+    # Validate input mode
+    input_modes = sum(
+        bool(mode) for mode in [args.prompt, args.interactive, args.file]
     )
-    api_group.add_argument(
-        "--temperature",
-        type=float,
-        default=1.0,
-        help="Temperature for response generation"
-    )
-
-    return parser.parse_args()
+    if input_modes != 1:
+        parser.error("Exactly one input mode (--prompt, --interactive, or --file) is required")
+    
+    # Set system prompt if not provided
+    if not args.system:
+        args.system = "You are Claude, an AI assistant. Be concise and helpful."
+    
+    return args
 
 
 def get_enabled_tools(tool_names: List[str], args) -> List:
     """Get enabled tool instances based on names."""
     tools = []
-
+    
     if "all" in tool_names or "think" in tool_names:
         tools.append(ThinkTool())
-
+    
     if "all" in tool_names or "file_read" in tool_names:
         tools.append(FileReadTool())
-
+    
     if "all" in tool_names or "file_write" in tool_names:
         tools.append(FileWriteTool())
-
+        
     if "all" in tool_names or "computer_use" in tool_names:
         tools.append(ComputerUseTool(
             display_width_px=args.display_width,
@@ -336,71 +317,100 @@ def get_enabled_tools(tool_names: List[str], args) -> List:
             display_number=args.display_number,
             tool_version=args.computer_tool_version,
         ))
-
+    
     if "all" in tool_names or "code_execution" in tool_names:
         # Check if model supports code execution
         if not is_model_supported(args.model):
-            print(
-                f"Warning: Model {args.model} may not support code execution. "
-                f"Supported models:"
-            )
-            for model in [
-                "claude-opus-4-20250514", "claude-sonnet-4-20250514",
-                "claude-3-7-sonnet-20250219", "claude-3-5-haiku-latest"
-            ]:
+            print(f"Warning: Model {args.model} may not support code execution. Supported models:")
+            for model in ["claude-opus-4-20250514", "claude-sonnet-4-20250514", 
+                         "claude-3-7-sonnet-20250219", "claude-3-5-haiku-latest"]:
                 print(f"  - {model}")
-
+        
         if args.enable_file_support:
             tools.append(CodeExecutionWithFilesTool())
         else:
             tools.append(CodeExecutionTool())
-
+    
     return tools
 
 
-async def handle_single_prompt_async(args, tools):
-    """Handle single prompt execution."""
-    agent = Agent(
-        name=args.name,
-        system=args.system_prompt or "You are Claude, an AI assistant.",
-        tools=tools,
-        verbose=args.verbose,
-        config=ModelConfig(
-            model=args.model,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature
-        )
-    )
+def setup_mcp_servers(server_urls: Optional[List[str]]) -> List[dict]:
+    """Configure MCP server connections."""
+    if not server_urls:
+        return []
+    
+    return [
+        {
+            "url": url,
+            "connection_type": "sse" if url.startswith("http") else "stdio",
+        }
+        for url in server_urls
+    ]
 
+
+def format_response(response):
+    """Format agent response for display."""
+    output = []
+    
+    for block in response.content:
+        if block.type == "text":
+            output.append(block.text)
+    
+    return "\n".join(output)
+
+
+async def handle_interactive_session(agent: Agent):
+    """Run an interactive session with the agent."""
+    print(f"Starting interactive session with {agent.name}...")
+    print("Type 'exit' or 'quit' to end the session.")
+    print("Type 'clear' to clear conversation history.")
+    print("-" * 50)
+    
+    while True:
+        try:
+            user_input = input("\nYou: ")
+            
+            if user_input.lower() in ("exit", "quit"):
+                print("Ending session.")
+                break
+                
+            if user_input.lower() == "clear":
+                agent.history.clear()
+                print("Conversation history cleared.")
+                continue
+                
+            if not user_input.strip():
+                continue
+                
+            response = await agent.run_async(user_input)
+            print("\nClaude:", format_response(response))
+            
+        except KeyboardInterrupt:
+            print("\nSession interrupted. Exiting...")
+            break
+        except Exception as e:
+            print(f"\nError: {str(e)}")
+
+
+async def handle_single_prompt(agent: Agent, prompt: str):
+    """Run a single prompt through the agent."""
     try:
-        response = await agent.run_async(args.prompt)
+        response = await agent.run_async(prompt)
         print(format_response(response))
     except Exception as e:
         print(f"Error: {str(e)}", file=sys.stderr)
         sys.exit(1)
 
 
-async def handle_file_input_async(args, tools):
-    """Handle file input execution."""
-    agent = Agent(
-        name=args.name,
-        system=args.system_prompt or "You are Claude, an AI assistant.",
-        tools=tools,
-        verbose=args.verbose,
-        config=ModelConfig(
-            model=args.model,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature
-        )
-    )
-
+async def handle_file_input(agent: Agent, file_path: str):
+    """Run agent with input from a file."""
     try:
-        if args.file == "-":
+        if file_path == "-":
             content = sys.stdin.read()
         else:
-            with open(args.file, "r") as f:
+            with open(file_path, "r") as f:
                 content = f.read()
-
+                
         response = await agent.run_async(content)
         print(format_response(response))
     except Exception as e:
@@ -408,38 +418,33 @@ async def handle_file_input_async(args, tools):
         sys.exit(1)
 
 
-def format_response(response):
-    """Format agent response for display."""
-    output = []
-
-    for block in response.content:
-        if block.type == "text":
-            output.append(block.text)
-
-    return "\n".join(output)
-
-
-def main() -> None:
-    """
-    Entry point for the Cognitive Agent CLI, supporting
-    advanced configuration and interaction modes.
-    """
+async def main_async():
+    """Async entry point for the CLI."""
     args = parse_args()
-
-    # Validate Anthropic API key
+    
+    # Configure API client
     api_key = args.api_key or os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
         print(
-            "⚠️ Anthropic API key not found. Please set the "
-            "ANTHROPIC_API_KEY environment variable or use --api-key."
+            "Error: Anthropic API key not provided. Set ANTHROPIC_API_KEY environment "
+            "variable or use --api-key",
+            file=sys.stderr,
         )
         sys.exit(1)
-
-    # Get enabled tools
+    
+    client = Anthropic(api_key=api_key)
+    
+    # Configure agent
+    config = ModelConfig(
+        model=args.model,
+        max_tokens=args.max_tokens,
+        temperature=args.temperature,
+    )
+    
     tools = get_enabled_tools(args.tools, args)
-
-    # Initialize cognitive agent CLI
-    cognitive_cli = CognitiveAgentCLI(
+    mcp_servers = setup_mcp_servers(args.mcp_server)
+    
+    agent = Agent(
         name=args.name,
         system_prompt=args.system_prompt,
         tools=tools,

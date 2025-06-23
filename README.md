@@ -371,7 +371,11 @@ import anthropic
 client = anthropic.Anthropic()
 
 response = client.beta.messages.create(
+<<<<<<< HEAD
     model="claude-sonnet-4-20250514",
+=======
+    model="claude-sonnet-4-20250514",  
+>>>>>>> be75a83 (add)
     max_tokens=1024,
     tools=[
         {

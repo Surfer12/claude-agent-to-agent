@@ -78,6 +78,7 @@ class Agent:
         message_params overriding conflicting keys.
         """
         params = {
+        params = {
             "model": self.config.model,
             "max_tokens": self.config.max_tokens,
             "temperature": self.config.temperature,
@@ -86,21 +87,17 @@ class Agent:
             "tools": [tool.to_dict() for tool in self.tools],
             **self.message_params,
         }
-
+        
         # Collect beta headers needed for tools
         beta_headers = set()
-
+        
         # Add beta headers for computer use tools
-        computer_tools = [
-            tool for tool in self.tools
-            if hasattr(tool, 'tool_version') and tool.name == 'computer'
-        ]
+        computer_tools = [tool for tool in self.tools if hasattr(tool, 'tool_version') and tool.name == 'computer']
         if computer_tools:
             model = self.config.model.lower()
             tool_version = computer_tools[0].tool_version
-
-            if ("claude-4" in model or "claude-sonnet-3.7" in model or
-                    "claude-sonnet-4" in model):
+            
+            if "claude-4" in model or "claude-sonnet-3.7" in model or "claude-sonnet-4" in model:
                 if tool_version == "computer_20250124":
                     beta_headers.add("computer-use-2025-01-24")
                 else:
@@ -109,25 +106,22 @@ class Agent:
                 beta_headers.add("computer-use-2024-10-22")
             else:
                 beta_headers.add("computer-use-2025-01-24")
-
+        
         # Add beta headers for code execution tools
-        code_execution_tools = [
-            tool for tool in self.tools
-            if hasattr(tool, 'tool_type') and 'code_execution' in tool.tool_type
-        ]
+        code_execution_tools = [tool for tool in self.tools if hasattr(tool, 'tool_type') and 'code_execution' in tool.tool_type]
         if code_execution_tools:
             beta_headers.add("code-execution-2025-05-22")
-
+            
             # Check if any code execution tools support files
             for tool in code_execution_tools:
                 if hasattr(tool, 'supports_files') and tool.supports_files:
                     beta_headers.add("files-api-2025-04-14")
                     break
-
+        
         # Add beta headers to params if any are needed
         if beta_headers:
             params["betas"] = list(beta_headers)
-
+                
         return params
 
     async def _agent_loop(self, user_input: str) -> list[dict[str, Any]]:
@@ -143,11 +137,9 @@ class Agent:
             params = self._prepare_message_params()
 
             # Use beta client if beta tools are present
-            beta_tools = [
-                tool for tool in self.tools if
-                (hasattr(tool, 'tool_version') and tool.name == 'computer') or
-                (hasattr(tool, 'tool_type') and 'code_execution' in tool.tool_type)
-            ]
+            beta_tools = [tool for tool in self.tools if 
+                         (hasattr(tool, 'tool_version') and tool.name == 'computer') or
+                         (hasattr(tool, 'tool_type') and 'code_execution' in tool.tool_type)]
             if beta_tools:
                 response = self.client.beta.messages.create(**params)
             else:
