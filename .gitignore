@@ -5,3 +5,4 @@
 # magic environments
 .magic
 key-deriv.md
+.env
