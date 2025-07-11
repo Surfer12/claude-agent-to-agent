@@ -220,10 +220,11 @@ def parse_args():
         default='claude-3-5-sonnet-20240620',
         choices=[
            'claude-opus-4-20250514',
-            'claude-sonnet-4-20250514'
+            'claude-sonnet-4-20250514',
             'claude-3-7-sonnet-20250219', 
         ],
         help='Select the Claude model for cognitive interactions'
+    )
     
     # Tool configuration
     tool_group = parser.add_argument_group("Tool options")
