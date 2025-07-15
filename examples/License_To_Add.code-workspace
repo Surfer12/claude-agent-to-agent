@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../../../License_To_Add"
+		},
+		{
+			"name": "claude-agent-to-agent",
+			"path": ".."
+		}
+	],
+	"settings": {}
+}
