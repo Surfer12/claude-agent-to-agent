@@ -1,0 +1,37 @@
+tag_name: cognitive_process
+version: "1.0.0"
+description: >-
+  Root tag that encloses a complete AI cognitive analysis cycle, from initial
+  understanding of the problem through exploration, formulation of a solution,
+  and reflection on the outcome.
+analogy: "A full scientific experiment lifecycle — hypothesis, experimentation, analysis, conclusion."
+
+attributes:
+  phases:
+    type: list
+    description: "Ordered list of phase names inside the cognitive process."
+    required: true
+    example:
+      - understanding
+      - analysis
+      - exploration
+      - solution_formulation
+      - reflection
+  iteration_number:
+    type: integer
+    description: "Index of the current iteration within the overarching process."
+    example: 1
+
+relationships:
+  - type: contains
+    target: understanding
+    description: "Starts with an understanding phase."
+  - type: contains
+    target: analysis
+    description: "Followed by an analysis phase."
+  - type: contains
+    target: reflection
+    description: "Ends with a reflection phase."
+
+recursion_rules:
+  enabled: false
