@@ -43,6 +43,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Supported Claude models for this CLI
+ALLOWED_MODELS = [
+    "claude-opus-4-20250514",
+    "claude-sonnet-4-20250514",
+    "claude-3-7-sonnet-20250219",
+    "claude-3-5-sonnet-20240620",
+]
+
 
 @dataclass(frozen=True)
 class InteractionMetrics:
@@ -95,6 +103,10 @@ class CognitiveAgentCLI:
             "drawing insights from multiple domains of knowledge."
         )
 
+        # Validate model selection
+        if model not in ALLOWED_MODELS:
+            raise ValueError(f"Unsupported model: {model}")
+
         # Configure default and optional tools
         default_tools = (
             ThinkTool(),
@@ -139,7 +151,11 @@ class CognitiveAgentCLI:
                     # Track interaction performance
                     start_time = asyncio.get_event_loop().time()
 
-                    response = await agent.run_async(user_input)
+                    result = agent.run_async(user_input)
+                    if asyncio.iscoroutine(result):
+                        response = await result
+                    else:
+                        response = result
 
                     end_time = asyncio.get_event_loop().time()
                     response_time = end_time - start_time

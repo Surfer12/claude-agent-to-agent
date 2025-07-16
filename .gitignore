@@ -6,3 +6,4 @@
 .magic
 key-deriv.md
 .env
+__pycache__/
