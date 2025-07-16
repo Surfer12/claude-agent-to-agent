@@ -8,20 +8,22 @@ import os
 import sys
 import pytest
 import asyncio
-from unittest.mock import Mock, patch
+from types import SimpleNamespace
+from unittest.mock import Mock, AsyncMock, patch
 from datetime import datetime
 from typing import List, Optional
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import cli
 from cli import CognitiveAgentCLI, InteractionMetrics, AgentConfig
 
 @pytest.fixture
 def mock_agent():
     """Create a mock agent for testing."""
     agent = Mock()
-    agent.run_async = Mock()
+    agent.run_async = AsyncMock()
     return agent
 
 @pytest.fixture
@@ -139,6 +141,79 @@ def test_model_validation():
     # Test invalid model
     with pytest.raises(ValueError):
         CognitiveAgentCLI(model="invalid-model")
+
+
+@pytest.mark.asyncio
+async def test_handle_single_prompt_async(monkeypatch):
+    args = SimpleNamespace(
+        name="TestAgent",
+        system_prompt="Test prompt",
+        verbose=True,
+        model="claude-3-5-sonnet-20240620",
+        prompt="Hello"
+    )
+
+    mock_agent = Mock()
+    monkeypatch.setattr("cli.Agent", Mock(return_value=mock_agent))
+    handle_mock = AsyncMock()
+    monkeypatch.setattr("cli.handle_single_prompt", handle_mock)
+
+    await cli.handle_single_prompt_async(args, [])
+    handle_mock.assert_awaited_once_with(mock_agent, "Hello")
+
+
+@pytest.mark.asyncio
+async def test_handle_file_input_async(tmp_path, monkeypatch):
+    file = tmp_path / "input.txt"
+    file.write_text("data")
+    args = SimpleNamespace(
+        name="TestAgent",
+        system_prompt="Test prompt",
+        verbose=True,
+        model="claude-3-5-sonnet-20240620",
+        file=str(file)
+    )
+
+    mock_agent = Mock()
+    monkeypatch.setattr("cli.Agent", Mock(return_value=mock_agent))
+    handle_mock = AsyncMock()
+    monkeypatch.setattr("cli.handle_file_input", handle_mock)
+
+    await cli.handle_file_input_async(args, [])
+    handle_mock.assert_awaited_once_with(mock_agent, str(file))
+
+
+@pytest.mark.asyncio
+async def test_main_async_interactive(monkeypatch):
+    args = SimpleNamespace(
+        interactive=True,
+        prompt=None,
+        file=None,
+        name="TestAgent",
+        system_prompt="Test prompt",
+        verbose=True,
+        model="claude-3-5-sonnet-20240620",
+        tools=[],
+        mcp_server=None,
+        api_key="key",
+        enable_file_support=False,
+        display_width=0,
+        display_height=0,
+        display_number=0,
+        computer_tool_version="computer_20250124"
+    )
+
+    monkeypatch.setattr("cli.parse_args", lambda: args)
+    monkeypatch.setattr(cli, "Anthropic", Mock, raising=False)
+    monkeypatch.setattr("cli.get_enabled_tools", lambda names, a: [])
+    monkeypatch.setattr("cli.setup_mcp_servers", lambda urls: [])
+
+    cli_instance = Mock()
+    cli_instance.interactive_session = AsyncMock()
+    monkeypatch.setattr("cli.CognitiveAgentCLI", Mock(return_value=cli_instance))
+
+    await cli.main_async()
+    cli_instance.interactive_session.assert_awaited_once()
 
 if __name__ == "__main__":
     pytest.main([__file__]) 
