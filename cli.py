@@ -102,6 +102,15 @@ class CognitiveAgentCLI:
             FileWriteTool()
         )
 
+        valid_models = [
+            'claude-opus-4-20250514',
+            'claude-sonnet-4-20250514',
+            'claude-3-7-sonnet-20250219',
+            'claude-3-5-sonnet-20240620',
+        ]
+        if model not in valid_models:
+            raise ValueError(f"Unsupported model: {model}")
+
         # Create immutable configuration
         self.config = AgentConfig(
             name=name,
@@ -419,6 +428,30 @@ async def handle_file_input(agent: Agent, file_path: str):
         sys.exit(1)
 
 
+async def handle_single_prompt_async(args, tools):
+    """Create an agent and process a single prompt."""
+    agent = Agent(
+        name=args.name,
+        system=args.system_prompt,
+        tools=tools,
+        verbose=args.verbose,
+        model=args.model,
+    )
+    await handle_single_prompt(agent, args.prompt)
+
+
+async def handle_file_input_async(args, tools):
+    """Create an agent and process file input."""
+    agent = Agent(
+        name=args.name,
+        system=args.system_prompt,
+        tools=tools,
+        verbose=args.verbose,
+        model=args.model,
+    )
+    await handle_file_input(agent, args.file)
+
+
 async def main_async():
     """Async entry point for the CLI."""
     args = parse_args()
@@ -434,32 +467,30 @@ async def main_async():
         sys.exit(1)
     
     client = Anthropic(api_key=api_key)
-    
-    # Configure agent
-    config = ModelConfig(
-        model=args.model,
-        max_tokens=args.max_tokens,
-        temperature=args.temperature,
-    )
-    
+
     tools = get_enabled_tools(args.tools, args)
     mcp_servers = setup_mcp_servers(args.mcp_server)
-    
-    agent = Agent(
+
+    cognitive_cli = CognitiveAgentCLI(
         name=args.name,
         system_prompt=args.system_prompt,
         tools=tools,
         verbose=args.verbose,
-        model=args.model
+        model=args.model,
     )
 
     # Run based on input mode
     if args.interactive:
-        asyncio.run(cognitive_cli.interactive_session())
+        await cognitive_cli.interactive_session()
     elif args.prompt:
-        asyncio.run(handle_single_prompt_async(args, tools))
+        await handle_single_prompt_async(args, tools)
     elif args.file:
-        asyncio.run(handle_file_input_async(args, tools))
+        await handle_file_input_async(args, tools)
+
+
+def main() -> None:
+    """Synchronous entry point for the CLI."""
+    asyncio.run(main_async())
 
 
 if __name__ == "__main__":
