@@ -1,6 +1,6 @@
 # Claude Financial Data Analyst
 
-![hero](public/hero.png)
+![hero](public/hero.png) 
 
 A sophisticated Next.js application that combines Claude's capabilities with interactive data visualization to analyze financial data via chat.
 
