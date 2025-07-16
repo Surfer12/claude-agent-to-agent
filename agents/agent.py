@@ -78,7 +78,6 @@ class Agent:
         message_params overriding conflicting keys.
         """
         params = {
-        params = {
             "model": self.config.model,
             "max_tokens": self.config.max_tokens,
             "temperature": self.config.temperature,
