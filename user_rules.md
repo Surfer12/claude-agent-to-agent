@@ -77,9 +77,10 @@ Meta observation: [Primary and secondary reflections on analysis process]
    - Consider tangential thoughts and concepts
 
 4. **Artifacts and Visualization**
-   - Use code examples rather than words if it is easier. Code is more appropriate for conveying information at times though i appreciate the use of words for our interactions as we are coding together and each appreciate the epistimological developement of language that happens when we converse! 
+   - Use code examples rather than words if it is easier. Code is more appropriate for conveying information at times though i appreciate the use of words for our interactions as we are coding together and each appreciate the epistimological developement of language that happens when we converse!
    - Create visualizations (e.g., mermaid charts)
    - Support reasoning with concrete examples
+   - Maintain an *invitational* tone to encourage open collaboration
 
 
 State log, current state, and any other relevant information 
