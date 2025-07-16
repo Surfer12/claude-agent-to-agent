@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/tag_definition.schema.json",
+  "title": "AI Tag Definition Schema",
+  "description": "Canonical schema that every tag definition YAML file must follow.",
+  "type": "object",
+  "required": ["version", "description"],
+  "additionalProperties": false,
+  "properties": {
+    "tag_name": {
+      "type": "string",
+      "description": "Unique name of the tag. If omitted, tools may derive it from the file name."
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version of this tag definition (MAJOR.MINOR.PATCH)",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable explanation of the tag’s purpose and semantics."
+    },
+    "analogy": {
+      "type": "string",
+      "description": "Optional analogy that helps humans grasp the tag’s intent."
+    },
+
+    "attributes": {
+      "type": "object",
+      "description": "Dictionary whose keys are attribute names and whose values describe each attribute.",
+      "default": {},
+      "additionalProperties": {
+        "type": "object",
+        "required": ["type"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Primitive type of the attribute value.",
+            "enum": [
+              "string",
+              "integer",
+              "number",
+              "boolean",
+              "list",
+              "object",
+              "enum"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "description": "Explanation of what the attribute represents."
+          },
+          "required": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether this attribute is mandatory when the tag is used."
+          },
+          "enum": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Allowed values when type is ‘enum’."
+          },
+          "example": {
+            "description": "Illustrative example value for this attribute."
+          }
+        }
+      }
+    },
+
+    "relationships": {
+      "type": "array",
+      "description": "Optional list of relationships to other tags.",
+      "default": [],
+      "items": {
+        "type": "object",
+        "required": ["type", "target"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Relationship verb indicating how this tag relates to the target.",
+            "enum": [
+              "contains",
+              "precedes",
+              "influences",
+              "generates",
+              "related_to",
+              "refines",
+              "exemplifies"
+            ]
+          },
+          "target": {
+            "type": "string",
+            "description": "Name of the target tag."
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description of the nature or intent of the relationship."
+          }
+        }
+      }
+    },
+
+    "recursion_rules": {
+      "type": "object",
+      "description": "Rules governing recursive usage of this tag.",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether recursion is allowed for this tag."
+        },
+        "max_depth": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum recursion depth permitted when ‘enabled’ is true."
+        },
+        "trigger_conditions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Conditions under which recursion may begin."
+        },
+        "on_limit_exceeded": {
+          "type": "string",
+          "description": "System behaviour when max_depth is exceeded.",
+          "enum": ["error", "warn", "truncate_recursion"]
+        }
+      }
+    }
+  }
+}
