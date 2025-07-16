@@ -2,6 +2,16 @@
     "folders": [
         {
             "path": "."
+        },
+        {
+            "name": "swarm",
+            "path": "swarm"
+        },
+        {
+            "path": "../openai-cua-sample-app"
+        },
+        {
+            "path": "../openai-java"
         }
     ]
 }

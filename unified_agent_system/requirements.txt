@@ -1,0 +1,55 @@
+# Core AI Provider Dependencies
+anthropic>=0.18.0
+openai>=1.0.0
+
+# Computer Use Dependencies
+playwright>=1.40.0
+selenium>=4.15.0
+requests>=2.31.0
+httpx>=0.25.0
+
+# CLI and Interface Dependencies
+click>=8.1.0
+rich>=13.7.0
+prompt-toolkit>=3.0.0
+pygments>=2.17.0
+
+# Tool and MCP Dependencies
+mcp>=1.0.0
+pydantic>=2.5.0
+typing-extensions>=4.8.0
+
+# File and System Operations
+pathlib2>=2.3.7
+watchdog>=3.0.0
+psutil>=5.9.0
+
+# Code Execution and Development
+jupyter>=1.0.0
+ipykernel>=6.25.0
+nbformat>=5.9.0
+
+# Configuration and Environment
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
+toml>=0.10.2
+
+# Testing and Development
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+black>=23.9.0
+isort>=5.12.0
+flake8>=6.1.0
+
+# Utilities
+asyncio-mqtt>=0.16.0
+websockets>=11.0.0
+aiofiles>=23.2.0
+python-multipart>=0.0.6
+
+# Optional: Advanced Features
+# Uncomment if you need these features
+# langchain>=0.1.0
+# chromadb>=0.4.0
+# sentence-transformers>=2.2.0 
