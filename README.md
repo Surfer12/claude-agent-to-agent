@@ -67,12 +67,15 @@ python -m unified_agent.cli --provider claude --enable-code-execution --interact
 
 # Enable computer use
 python -m unified_agent.cli --provider openai --enable-computer-use --computer-type local-playwright
+
+# Use a specific OpenAI model
+python -m unified_agent.cli --provider openai --model gpt-4o
 ```
 
 ### Programmatic Usage
 
 ```python
-from unified_agent import UnifiedAgent, AgentConfig, ProviderType
+from unified_agent import AgentConfig, ProviderType, UnifiedAgent
 
 # Create configuration
 config = AgentConfig(
@@ -94,7 +97,7 @@ print(response)
 ### Computer Use Example
 
 ```python
-from unified_agent import ComputerUseAgent, AgentConfig, ProviderType
+from unified_agent import AgentConfig, ComputerUseAgent, ProviderType
 
 # Create computer use agent
 config = AgentConfig(
@@ -176,6 +179,7 @@ await agent.run_interactive()
 ```python
 from unified_agent.tools.base import BaseTool
 
+
 class MyTool(BaseTool):
     def __init__(self):
         super().__init__("my_tool", "Description of my tool")
@@ -208,6 +212,7 @@ registry.register_tool(MyTool())
 ```python
 from unified_agent.core import ProviderInterface
 
+
 class MyProvider(ProviderInterface):
     async def create_message(self, messages, tools=None, **kwargs):
         # Provider implementation
@@ -230,7 +235,7 @@ elif self.config.provider == ProviderType.MY_PROVIDER:
 ### Web Scraping with Computer Use
 
 ```python
-from unified_agent import ComputerUseAgent, AgentConfig, ProviderType
+from unified_agent import AgentConfig, ComputerUseAgent, ProviderType
 
 config = AgentConfig(
     provider=ProviderType.OPENAI,
@@ -248,7 +253,7 @@ response = await agent.run("Go to the homepage and find the main navigation menu
 ### Code Analysis with Code Execution
 
 ```python
-from unified_agent import UnifiedAgent, AgentConfig, ProviderType
+from unified_agent import AgentConfig, ProviderType, UnifiedAgent
 
 config = AgentConfig(
     provider=ProviderType.CLAUDE,
