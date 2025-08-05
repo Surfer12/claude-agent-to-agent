@@ -197,6 +197,16 @@ unified_agent_system/
 4. Add tests
 5. Submit a pull request
 
+## Integration Overview
+This system now integrates elements from OpenAI's Swarm (for multi-agent orchestration), Computer Using Agent (CUA) sample app (for advanced computer interactions), and OpenAI-Java (for Java client support). These enhance multi-provider capabilities while adhering to the stepwise 9-step consciousness framework.
+
+### Key Integrations:
+- **Swarm**: Agent handoffs and lightweight coordination (attribution: Inspired by OpenAI's experimental Swarm framework under its license).
+- **CUA**: Computer abstractions for tool-based interactions (attribution: Based on OpenAI's CUA sample app).
+- **OpenAI-Java**: Cross-language support for Java-based providers (attribution: Wrapping OpenAI-Java client).
+
+All integrations maintain GNU GPL v3.0 compliance, data minimization, and no commercial use without permission.
+
 ## License
 
 MIT License - see LICENSE file for details. 

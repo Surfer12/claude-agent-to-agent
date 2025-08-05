@@ -1,0 +1,178 @@
+# Example: Custom Pixi Tasks for Java Swarm
+# Add these tasks to your pixi.toml file to extend functionality
+
+[tasks]
+# Custom agent configurations
+finance-bot = """
+java -jar target/java-swarm-1.0.0.jar --interactive --stream \
+  --agent-name "FinanceBot" \
+  --instructions "You are a financial advisor who provides investment advice and market analysis. Always include disclaimers about financial risks."
+"""
+
+science-bot = """
+java -jar target/java-swarm-1.0.0.jar --interactive \
+  --agent-name "ScienceBot" \
+  --instructions "You are a science educator who explains complex scientific concepts in simple terms with examples."
+"""
+
+creative-writer = """
+java -jar target/java-swarm-1.0.0.jar --interactive --stream \
+  --agent-name "CreativeWriter" \
+  --instructions "You are a creative writing assistant who helps with storytelling, character development, and plot ideas."
+"""
+
+# Development and testing tasks
+test-streaming-performance = """
+echo "Testing streaming performance..."
+time java -jar target/java-swarm-1.0.0.jar --input "Write a 500-word essay about artificial intelligence" --stream
+"""
+
+benchmark-models = """
+echo "Benchmarking different models..."
+echo "GPT-4o:"
+time java -jar target/java-swarm-1.0.0.jar --input "Explain quantum computing" --model gpt-4o
+echo ""
+echo "GPT-4o-mini:"
+time java -jar target/java-swarm-1.0.0.jar --input "Explain quantum computing" --model gpt-4o-mini
+"""
+
+# Utility tasks
+check-api-limits = """
+echo "Checking API connection and limits..."
+java -jar target/java-swarm-1.0.0.jar --input "Hello" --debug 2>&1 | grep -E "(HTTP|Error|Rate)"
+"""
+
+generate-docs = """
+echo "Generating documentation..."
+mvn javadoc:javadoc
+echo "Documentation generated in target/site/apidocs/"
+"""
+
+# Demo scenarios
+demo-function-calling = """
+echo "=== Function Calling Demo ==="
+echo "This demo shows how agents can call functions..."
+java -jar target/java-swarm-1.0.0.jar --input "Calculate the area of a circle with radius 5, then echo the result" --debug
+"""
+
+demo-context-variables = """
+echo "=== Context Variables Demo ==="
+echo "This demo shows how context is maintained across turns..."
+java -jar target/java-swarm-1.0.0.jar --interactive --debug
+"""
+
+demo-agent-handoff = """
+echo "=== Agent Handoff Demo ==="
+echo "This demo shows how agents can hand off to other agents..."
+# Note: This would require implementing agent handoff functionality
+java -jar target/java-swarm-1.0.0.jar --interactive --debug
+"""
+
+# Performance and monitoring
+monitor-memory = """
+echo "Monitoring memory usage during execution..."
+java -XX:+PrintGCDetails -Xmx1g -jar target/java-swarm-1.0.0.jar --interactive
+"""
+
+profile-cpu = """
+echo "CPU profiling with Java Flight Recorder..."
+java -XX:+FlightRecorder -XX:StartFlightRecording=duration=60s,filename=swarm-profile.jfr \
+  -jar target/java-swarm-1.0.0.jar --input "Tell me about machine learning"
+echo "Profile saved to swarm-profile.jfr"
+"""
+
+# Batch processing tasks
+batch-questions = """
+echo "Processing batch questions..."
+echo "Question 1: What is AI?"
+java -jar target/java-swarm-1.0.0.jar --input "What is artificial intelligence?"
+echo ""
+echo "Question 2: How does ML work?"
+java -jar target/java-swarm-1.0.0.jar --input "How does machine learning work?"
+echo ""
+echo "Question 3: Future of AI?"
+java -jar target/java-swarm-1.0.0.jar --input "What is the future of AI?"
+"""
+
+# Configuration testing
+test-all-models = """
+echo "Testing all supported models..."
+for model in gpt-4o gpt-4o-mini gpt-3.5-turbo; do
+  echo "Testing $model..."
+  java -jar target/java-swarm-1.0.0.jar --input "Hello from $model" --model $model
+  echo ""
+done
+"""
+
+# Security and validation
+validate-ssl = """
+echo "Validating SSL/TLS configuration..."
+mvn compile exec:java -Dexec.mainClass=HttpsConfigExample
+"""
+
+test-proxy = """
+echo "Testing proxy configuration..."
+# Set proxy environment variables if needed
+# export https_proxy=http://proxy.company.com:8080
+java -jar target/java-swarm-1.0.0.jar --input "Test proxy connection" --debug
+"""
+
+# Cleanup tasks
+clean-logs = """
+echo "Cleaning up log files..."
+rm -f *.log *.jfr
+echo "Log files cleaned"
+"""
+
+reset-environment = """
+echo "Resetting environment..."
+mvn clean
+rm -rf target/
+rm -f *.log *.jfr
+echo "Environment reset complete"
+"""
+
+# Advanced development tasks
+hot-reload-dev = """
+echo "Starting hot reload development mode..."
+# This would require additional tooling like JRebel or similar
+mvn compile exec:java -Dexec.mainClass=com.swarm.cli.SwarmCLI -Dexec.args="--interactive --debug"
+"""
+
+integration-test = """
+echo "Running integration tests..."
+mvn verify
+echo "Integration tests complete"
+"""
+
+# Custom environments for different use cases
+[feature.production.tasks]
+prod-build = """
+echo "Building for production..."
+mvn clean package -Dmaven.test.skip=true -Dspring.profiles.active=prod
+"""
+
+prod-run = """
+echo "Running in production mode..."
+java -Xmx2g -XX:+UseG1GC -jar target/java-swarm-1.0.0.jar --interactive
+"""
+
+[feature.development.tasks]
+dev-with-debugger = """
+echo "Starting with debugger enabled..."
+java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 \
+  -jar target/java-swarm-1.0.0.jar --interactive --debug
+"""
+
+dev-watch = """
+echo "Watching for file changes..."
+# This would require additional file watching tools
+mvn compile exec:java -Dexec.mainClass=com.swarm.cli.SwarmCLI -Dexec.args="--interactive"
+"""
+
+# Usage examples:
+# pixi run finance-bot
+# pixi run test-streaming-performance
+# pixi run demo-function-calling
+# pixi run -e production prod-build
+# pixi run -e development dev-with-debugger

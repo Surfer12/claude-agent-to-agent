@@ -5,16 +5,23 @@
 set -e
 
 echo "Building Java Swarm..."
+echo ""
+echo "💡 Tip: For easier development, consider using Pixi:"
+echo "   curl -fsSL https://pixi.sh/install.sh | bash"
+echo "   pixi install && pixi run quick-start"
+echo ""
 
 # Check if Maven is installed
 if ! command -v mvn &> /dev/null; then
     echo "Error: Maven is not installed. Please install Maven first."
+    echo "Or use Pixi: pixi install"
     exit 1
 fi
 
 # Check if Java is installed
 if ! command -v java &> /dev/null; then
     echo "Error: Java is not installed. Please install Java 17 or higher."
+    echo "Or use Pixi: pixi install"
     exit 1
 fi
 
@@ -22,6 +29,7 @@ fi
 JAVA_VERSION=$(java -version 2>&1 | head -n 1 | cut -d'"' -f2 | cut -d'.' -f1)
 if [ "$JAVA_VERSION" -lt 17 ]; then
     echo "Error: Java 17 or higher is required. Current version: $JAVA_VERSION"
+    echo "Or use Pixi which will install the correct Java version: pixi install"
     exit 1
 fi
 
@@ -47,6 +55,11 @@ if [ -f "$JAR_FILE" ]; then
     echo "  java -jar $JAR_FILE --help"
     echo "  java -jar $JAR_FILE --interactive"
     echo "  java -jar $JAR_FILE --input \"Hello, world!\""
+    echo ""
+    echo "Or with Pixi (recommended):"
+    echo "  pixi run interactive"
+    echo "  pixi run interactive-stream"
+    echo "  pixi run chat \"Hello, world!\""
     echo ""
     echo "Make sure to set your OpenAI API key:"
     echo "  export OPENAI_API_KEY=\"your-api-key-here\""

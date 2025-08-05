@@ -4,11 +4,32 @@ Get up and running with Java Swarm in 5 minutes!
 
 ## Prerequisites
 
-- Java 17 or higher
-- Maven 3.6 or higher
+- [Pixi](https://pixi.sh) (recommended) OR Java 17+ and Maven 3.6+
 - OpenAI API key
 
-## Quick Setup
+## Quick Setup with Pixi (Recommended)
+
+1. **Install Pixi** (if not already installed):
+   ```bash
+   curl -fsSL https://pixi.sh/install.sh | bash
+   ```
+
+2. **Setup the project**:
+   ```bash
+   pixi install
+   ```
+
+3. **Set your OpenAI API key:**
+   ```bash
+   export OPENAI_API_KEY="your-openai-api-key-here"
+   ```
+
+4. **Start chatting**:
+   ```bash
+   pixi run quick-start
+   ```
+
+## Alternative Setup (Manual)
 
 1. **Set your OpenAI API key:**
    ```bash
@@ -75,34 +96,20 @@ Assistant: Once upon a time, in a world where technology had advanced beyond ima
 
 ## Command Line Options
 
-### Single Message Mode
+### Pixi Commands (Recommended)
 ```bash
-java -jar target/java-swarm-1.0.0.jar --input "What's 2+2?"
+pixi run interactive              # Basic interactive mode
+pixi run interactive-stream       # Interactive with streaming
+pixi run interactive-debug        # Interactive with debug logging
+pixi run chat "Your message"      # Single message
+pixi run chat-stream "Message"    # Single message with streaming
 ```
 
-### Debug Mode
+### Manual Commands
 ```bash
-java -jar target/java-swarm-1.0.0.jar --interactive --debug
-```
-
-### Custom Model
-```bash
-java -jar target/java-swarm-1.0.0.jar --interactive --model gpt-4o-mini
-```
-
-### Custom Agent
-```bash
-java -jar target/java-swarm-1.0.0.jar --interactive --agent-name "MathBot" --instructions "You are a mathematics expert."
-```
-
-### Streaming Mode
-```bash
-java -jar target/java-swarm-1.0.0.jar --interactive --stream
-```
-
-### Single Message with Streaming
-```bash
-java -jar target/java-swarm-1.0.0.jar --input "Tell me about quantum computing" --stream
+java -jar target/java-swarm-1.0.0.jar --interactive
+java -jar target/java-swarm-1.0.0.jar --input "Hello, world!"
+java -jar target/java-swarm-1.0.0.jar --interactive --stream --debug
 ```
 
 ## Interactive Commands
@@ -112,6 +119,38 @@ While in interactive mode:
 - `clear` - Clear conversation history
 - `toggle-stream` - Toggle streaming mode on/off
 - `quit` or `exit` - Exit the program
+
+## Pixi Command Examples
+
+### Quick Tasks
+```bash
+pixi run help              # Show CLI help
+pixi run version           # Show version info
+pixi run build             # Build the project
+pixi run test              # Run tests
+```
+
+### Specialized Agents
+```bash
+pixi run math-bot          # Mathematics expert
+pixi run code-bot          # Programming expert
+pixi run story-bot         # Creative storyteller (with streaming)
+```
+
+### Model Selection
+```bash
+pixi run gpt4              # Use GPT-4o model
+pixi run gpt4-mini         # Use GPT-4o-mini model
+pixi run gpt35             # Use GPT-3.5-turbo model
+```
+
+### Development
+```bash
+pixi run dev               # Development mode with hot reload
+pixi run streaming-demo    # Demonstrate streaming responses
+pixi run calculator-demo   # Demonstrate function calling
+pixi run https-demo        # Demonstrate HTTPS configuration
+```
 
 ## Available Functions
 
@@ -128,13 +167,25 @@ Make sure you've set your API key:
 export OPENAI_API_KEY="sk-your-key-here"
 ```
 
-### "Maven is not installed"
+### "Pixi not found"
+Install Pixi:
+```bash
+curl -fsSL https://pixi.sh/install.sh | bash
+```
+
+### "JAR file not found"
+Build the project first:
+```bash
+pixi run build
+```
+
+### "Maven is not installed" (Manual setup)
 Install Maven:
 - **macOS:** `brew install maven`
 - **Ubuntu:** `sudo apt install maven`
 - **Windows:** Download from [maven.apache.org](https://maven.apache.org)
 
-### "Java 17 or higher is required"
+### "Java 17 or higher is required" (Manual setup)
 Install Java 17+:
 - **macOS:** `brew install openjdk@17`
 - **Ubuntu:** `sudo apt install openjdk-17-jdk`
@@ -143,23 +194,37 @@ Install Java 17+:
 ### Build Fails
 Try cleaning and rebuilding:
 ```bash
+pixi run rebuild
+# OR manually:
 mvn clean
 mvn compile
 mvn package
 ```
 
+### Connection Issues
+Test your connection:
+```bash
+pixi run test-connection
+```
+
 ## Next Steps
 
-1. **Explore the code** - Check out the source code in `src/main/java/com/swarm/`
-2. **Create custom functions** - See the README for how to add your own functions
-3. **Run tests** - Execute `mvn test` to run the test suite
-4. **Check examples** - Look at `examples/basic-usage.java` for programmatic usage
+1. **Explore Pixi commands** - Run `pixi task list` to see all available commands
+2. **Try specialized agents** - Use `pixi run math-bot` or `pixi run story-bot`
+3. **Experiment with streaming** - Use `pixi run interactive-stream` for real-time responses
+4. **Check examples** - Run `pixi run streaming-demo` and `pixi run https-demo`
+5. **Read detailed docs** - Check [PIXI_USAGE.md](PIXI_USAGE.md) for complete command reference
+6. **Explore the code** - Check out the source code in `src/main/java/com/swarm/`
+7. **Create custom functions** - See the README for how to add your own functions
+8. **Run tests** - Execute `pixi run test` to run the test suite
 
 ## Getting Help
 
-- Run `java -jar target/java-swarm-1.0.0.jar --help` for CLI options
+- Run `pixi run help` for CLI options
+- Run `pixi task list` to see all available pixi commands
 - Type `help` in interactive mode for available commands
 - Check the full README.md for detailed documentation
+- Check [PIXI_USAGE.md](PIXI_USAGE.md) for pixi-specific usage
 - Open an issue on GitHub for bugs or questions
 
 Happy coding with Java Swarm! 🚀
