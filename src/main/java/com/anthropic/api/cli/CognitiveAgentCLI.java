@@ -2,7 +2,7 @@ package com.anthropic.api.cli;
 
 import com.anthropic.api.AnthropicClientEnhanced;
 import com.anthropic.api.tools.AnthropicTools;
-import com.anthropic.api.tools.AnthropicTools.BaseTool;
+
 import com.anthropic.api.processors.UPOFProcessor;
 
 import java.time.LocalDateTime;
@@ -28,7 +28,7 @@ public final class CognitiveAgentCLI {
     private final String systemPrompt;
     private final Set<String> tools;
     private final boolean verbose;
-    private final String model;
+
     private final AnthropicClientEnhanced client;
     
     // Metrics tracking
@@ -42,7 +42,6 @@ public final class CognitiveAgentCLI {
         this.systemPrompt = builder.systemPrompt;
         this.tools = Collections.unmodifiableSet(builder.tools);
         this.verbose = builder.verbose;
-        this.model = builder.model;
         this.client = builder.client;
         
         // Setup logging
@@ -57,7 +56,7 @@ public final class CognitiveAgentCLI {
         private String systemPrompt = getDefaultSystemPrompt();
         private Set<String> tools = new HashSet<>(Arrays.asList("bash", "web_search", "weather"));
         private boolean verbose = false;
-        private String model = "claude-3-5-sonnet-20240620";
+
         private AnthropicClientEnhanced client;
 
         public Builder() {
@@ -89,10 +88,7 @@ public final class CognitiveAgentCLI {
             return this;
         }
 
-        public Builder model(String model) {
-            this.model = model;
-            return this;
-        }
+
 
         public Builder client(AnthropicClientEnhanced client) {
             this.client = client;
@@ -120,9 +116,7 @@ public final class CognitiveAgentCLI {
     public void interactiveSession() {
         LOGGER.info("Initiating Cognitive Agent Session: " + name);
         
-        Scanner scanner = new Scanner(System.in);
-        
-        try {
+        try (Scanner scanner = new Scanner(System.in)) {
             while (true) {
                 try {
                     System.out.print("\n🧠 Cognitive Agent > ");
