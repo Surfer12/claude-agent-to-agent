@@ -133,9 +133,15 @@ public class SwarmCLI {
         // Initialize Swarm
         Swarm swarm = new Swarm();
         
+        // Test connection
+        if (!swarm.testConnection()) {
+            System.err.println("Warning: Could not connect to OpenAI API. Please check your API key.");
+        }
+        
         // Parse options
         String model = cmd.getOptionValue("model", "gpt-4o");
         boolean debug = cmd.hasOption("debug");
+        boolean stream = cmd.hasOption("stream") && !cmd.hasOption("no-stream");
         int maxTurns = Integer.parseInt(cmd.getOptionValue("max-turns", String.valueOf(Integer.MAX_VALUE)));
         String agentName = cmd.getOptionValue("agent-name", "Assistant");
         String instructions = cmd.getOptionValue("instructions", "You are a helpful assistant.");
@@ -153,21 +159,25 @@ public class SwarmCLI {
         
         System.out.println("Java Swarm CLI v" + VERSION);
         System.out.println("Agent: " + agent.getName() + " (Model: " + agent.getModel() + ")");
+        System.out.println("Streaming: " + (stream ? "enabled" : "disabled"));
         System.out.println("Debug: " + debug);
         System.out.println();
         
         if (cmd.hasOption("interactive")) {
-            runInteractive(swarm, agent, debug, maxTurns);
+            runInteractive(swarm, agent, debug, maxTurns, stream);
         } else if (cmd.hasOption("input")) {
             String input = cmd.getOptionValue("input");
-            runSingle(swarm, agent, input, debug, maxTurns);
+            runSingle(swarm, agent, input, debug, maxTurns, stream);
         } else {
             System.err.println("Either --interactive or --input must be specified");
             System.exit(1);
         }
+        
+        // Clean up resources
+        swarm.close();
     }
     
-    private void runInteractive(Swarm swarm, Agent agent, boolean debug, int maxTurns) throws IOException {
+    private void runInteractive(Swarm swarm, Agent agent, boolean debug, int maxTurns, boolean stream) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         List<Map<String, Object>> history = new ArrayList<>();
         Map<String, Object> contextVariables = new HashMap<>();
@@ -175,6 +185,7 @@ public class SwarmCLI {
         System.out.println("Interactive mode. Type 'quit' or 'exit' to end the session.");
         System.out.println("Type 'clear' to clear the conversation history.");
         System.out.println("Type 'help' for available commands.");
+        System.out.println("Type 'toggle-stream' to toggle streaming mode.");
         System.out.println();
         
         while (true) {
@@ -198,6 +209,12 @@ public class SwarmCLI {
                 continue;
             }
             
+            if (input.trim().equalsIgnoreCase("toggle-stream")) {
+                stream = !stream;
+                System.out.println("Streaming " + (stream ? "enabled" : "disabled"));
+                continue;
+            }
+            
             if (input.trim().isEmpty()) {
                 continue;
             }
@@ -209,22 +226,12 @@ public class SwarmCLI {
             history.add(userMessage);
             
             try {
-                // Run the swarm
-                Response response = swarm.run(agent, history, contextVariables, null, false, debug, maxTurns, true);
-                
-                // Update history and context
-                history.addAll(response.getMessages());
-                contextVariables.putAll(response.getContextVariables());
-                
-                // Print the response
-                if (!response.getMessages().isEmpty()) {
-                    Map<String, Object> lastMessage = response.getMessages().get(response.getMessages().size() - 1);
-                    String content = (String) lastMessage.get("content");
-                    String sender = (String) lastMessage.get("sender");
-                    
-                    if (content != null && !content.trim().isEmpty()) {
-                        System.out.println(sender + ": " + content);
-                    }
+                if (stream) {
+                    // Handle streaming response
+                    handleStreamingResponse(swarm, agent, history, contextVariables, debug, maxTurns);
+                } else {
+                    // Handle non-streaming response
+                    handleNonStreamingResponse(swarm, agent, history, contextVariables, debug, maxTurns);
                 }
                 
                 if (debug && !contextVariables.isEmpty()) {
@@ -242,7 +249,99 @@ public class SwarmCLI {
         }
     }
     
-    private void runSingle(Swarm swarm, Agent agent, String input, boolean debug, int maxTurns) {
+    private void handleStreamingResponse(Swarm swarm, Agent agent, List<Map<String, Object>> history, 
+                                       Map<String, Object> contextVariables, boolean debug, int maxTurns) {
+        
+        StringBuilder responseBuilder = new StringBuilder();
+        String currentSender = null;
+        
+        swarm.runAndStream(agent, history, contextVariables, null, debug, maxTurns, true)
+            .blockingSubscribe(
+                event -> {
+                    String eventType = (String) event.get("type");
+                    
+                    switch (eventType) {
+                        case "delimiter":
+                            @SuppressWarnings("unchecked")
+                            Map<String, Object> delimData = (Map<String, Object>) event.get("data");
+                            String delim = (String) delimData.get("delim");
+                            if ("start".equals(delim)) {
+                                responseBuilder.setLength(0); // Clear previous content
+                            }
+                            break;
+                            
+                        case "delta":
+                            @SuppressWarnings("unchecked")
+                            Map<String, Object> deltaData = (Map<String, Object>) event.get("data");
+                            String content = (String) deltaData.get("content");
+                            String sender = (String) deltaData.get("sender");
+                            
+                            if (sender != null && !sender.equals(currentSender)) {
+                                if (responseBuilder.length() > 0) {
+                                    System.out.println(); // New line for new sender
+                                }
+                                System.out.print(sender + ": ");
+                                currentSender = sender;
+                            }
+                            
+                            if (content != null) {
+                                System.out.print(content);
+                                System.out.flush();
+                                responseBuilder.append(content);
+                            }
+                            break;
+                            
+                        case "response":
+                            @SuppressWarnings("unchecked")
+                            Map<String, Object> responseData = (Map<String, Object>) event.get("data");
+                            
+                            @SuppressWarnings("unchecked")
+                            List<Map<String, Object>> responseMessages = (List<Map<String, Object>>) responseData.get("messages");
+                            @SuppressWarnings("unchecked")
+                            Map<String, Object> responseContextVars = (Map<String, Object>) responseData.get("context_variables");
+                            
+                            // Update history and context
+                            history.addAll(responseMessages);
+                            contextVariables.putAll(responseContextVars);
+                            
+                            if (responseBuilder.length() > 0) {
+                                System.out.println(); // Final newline
+                            }
+                            break;
+                    }
+                },
+                error -> {
+                    System.err.println("\nStreaming error: " + error.getMessage());
+                    if (debug) {
+                        error.printStackTrace();
+                    }
+                }
+            );
+    }
+    
+    private void handleNonStreamingResponse(Swarm swarm, Agent agent, List<Map<String, Object>> history, 
+                                          Map<String, Object> contextVariables, boolean debug, int maxTurns) {
+        
+        // Run the swarm
+        Response response = swarm.run(agent, history, contextVariables, null, false, debug, maxTurns, true);
+        
+        // Update history and context
+        history.addAll(response.getMessages());
+        contextVariables.putAll(response.getContextVariables());
+        
+        // Print the response
+        if (!response.getMessages().isEmpty()) {
+            Map<String, Object> lastMessage = response.getMessages().get(response.getMessages().size() - 1);
+            String content = (String) lastMessage.get("content");
+            String sender = (String) lastMessage.get("sender");
+            
+            if (content != null && !content.trim().isEmpty()) {
+                System.out.println(sender + ": " + content);
+            }
+        }
+    }
+    
+    private void runSingle(Swarm swarm, Agent agent, String input, boolean debug, int maxTurns, boolean stream) {
         List<Map<String, Object>> messages = new ArrayList<>();
         Map<String, Object> userMessage = new HashMap<>();
         userMessage.put("role", "user");
@@ -250,14 +349,50 @@ public class SwarmCLI {
         messages.add(userMessage);
         
         try {
-            Response response = swarm.run(agent, messages, new HashMap<>(), null, false, debug, maxTurns, true);
-            
-            if (!response.getMessages().isEmpty()) {
-                Map<String, Object> lastMessage = response.getMessages().get(response.getMessages().size() - 1);
-                String content = (String) lastMessage.get("content");
+            if (stream) {
+                // Handle streaming response
+                StringBuilder responseBuilder = new StringBuilder();
                 
-                if (content != null && !content.trim().isEmpty()) {
-                    System.out.println(content);
+                swarm.runAndStream(agent, messages, new HashMap<>(), null, debug, maxTurns, true)
+                    .blockingSubscribe(
+                        event -> {
+                            String eventType = (String) event.get("type");
+                            
+                            if ("delta".equals(eventType)) {
+                                @SuppressWarnings("unchecked")
+                                Map<String, Object> deltaData = (Map<String, Object>) event.get("data");
+                                String content = (String) deltaData.get("content");
+                                
+                                if (content != null) {
+                                    System.out.print(content);
+                                    System.out.flush();
+                                    responseBuilder.append(content);
+                                }
+                            } else if ("response".equals(eventType)) {
+                                if (responseBuilder.length() > 0) {
+                                    System.out.println(); // Final newline
+                                }
+                            }
+                        },
+                        error -> {
+                            System.err.println("Streaming error: " + error.getMessage());
+                            if (debug) {
+                                error.printStackTrace();
+                            }
+                            System.exit(1);
+                        }
+                    );
+            } else {
+                // Handle non-streaming response
+                Response response = swarm.run(agent, messages, new HashMap<>(), null, false, debug, maxTurns, true);
+                
+                if (!response.getMessages().isEmpty()) {
+                    Map<String, Object> lastMessage = response.getMessages().get(response.getMessages().size() - 1);
+                    String content = (String) lastMessage.get("content");
+                    
+                    if (content != null && !content.trim().isEmpty()) {
+                        System.out.println(content);
+                    }
                 }
             }
             
@@ -272,10 +407,11 @@ public class SwarmCLI {
     
     private void printInteractiveHelp() {
         System.out.println("Available commands:");
-        System.out.println("  help  - Show this help message");
-        System.out.println("  clear - Clear conversation history");
-        System.out.println("  quit  - Exit the program");
-        System.out.println("  exit  - Exit the program");
+        System.out.println("  help         - Show this help message");
+        System.out.println("  clear        - Clear conversation history");
+        System.out.println("  toggle-stream - Toggle streaming mode on/off");
+        System.out.println("  quit         - Exit the program");
+        System.out.println("  exit         - Exit the program");
         System.out.println();
         System.out.println("Available functions:");
         System.out.println("  echo(message) - Echo back a message");

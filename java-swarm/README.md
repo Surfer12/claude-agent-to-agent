@@ -7,9 +7,13 @@ A Java implementation of the Swarm multi-agent framework, providing a command-li
 - **Multi-Agent Support**: Create and manage multiple AI agents
 - **Function Calling**: Agents can call custom functions and tools
 - **Context Management**: Maintain conversation context across agent interactions
-- **CLI Interface**: Easy-to-use command-line interface
+- **Streaming Responses**: Real-time streaming of AI responses with HTTPS support
+- **Secure HTTPS**: Production-ready HTTPS client with SSL/TLS configuration
+- **CLI Interface**: Easy-to-use command-line interface with streaming support
 - **Debug Mode**: Detailed logging for troubleshooting
 - **Extensible**: Easy to add new functions and capabilities
+- **Connection Pooling**: Efficient HTTP connection management
+- **Proxy Support**: Corporate proxy and authentication support
 
 ## Architecture
 
@@ -71,9 +75,14 @@ java -jar target/java-swarm-1.0.0.jar --interactive
 java -jar target/java-swarm-1.0.0.jar --input "Hello, how are you?"
 ```
 
-#### With Custom Options
+#### With Streaming
 ```bash
-java -jar target/java-swarm-1.0.0.jar --interactive --debug --model gpt-4o-mini --agent-name "MyAgent"
+java -jar target/java-swarm-1.0.0.jar --interactive --stream --debug --model gpt-4o-mini --agent-name "MyAgent"
+```
+
+#### Single Message with Streaming
+```bash
+java -jar target/java-swarm-1.0.0.jar --input "Tell me a story" --stream
 ```
 
 ### CLI Options
@@ -84,6 +93,8 @@ java -jar target/java-swarm-1.0.0.jar --interactive --debug --model gpt-4o-mini 
 - `--input MESSAGE`: Send a single message
 - `--model MODEL`: OpenAI model to use (default: gpt-4o)
 - `--debug, -d`: Enable debug mode
+- `--stream, -s`: Enable streaming responses
+- `--no-stream`: Disable streaming responses (default)
 - `--max-turns TURNS`: Maximum number of conversation turns
 - `--agent-name NAME`: Name for the agent (default: Assistant)
 - `--instructions TEXT`: System instructions for the agent
@@ -93,6 +104,7 @@ java -jar target/java-swarm-1.0.0.jar --interactive --debug --model gpt-4o-mini 
 When running in interactive mode, you can use these commands:
 - `help`: Show available commands
 - `clear`: Clear conversation history
+- `toggle-stream`: Toggle streaming mode on/off
 - `quit` or `exit`: Exit the program
 
 ### Built-in Functions
@@ -200,6 +212,13 @@ agent.getFunctions().add(new MyCustomFunction());
 java -jar target/java-swarm-1.0.0.jar --input "What's the weather like?"
 ```
 
+### Streaming Chat
+```bash
+java -jar target/java-swarm-1.0.0.jar --interactive --stream
+You: Tell me a long story about space exploration
+Assistant: [Response streams in real-time, word by word]
+```
+
 ### Calculator Usage
 ```bash
 java -jar target/java-swarm-1.0.0.jar --interactive
@@ -209,9 +228,54 @@ Assistant: I'll calculate that for you.
 Result: 352
 ```
 
-### Debug Mode
+### Debug Mode with Streaming
 ```bash
-java -jar target/java-swarm-1.0.0.jar --interactive --debug
+java -jar target/java-swarm-1.0.0.jar --interactive --debug --stream
+```
+
+### Programmatic Streaming Usage
+```java
+import com.swarm.core.Swarm;
+import com.swarm.types.Agent;
+
+Swarm swarm = new Swarm();
+Agent agent = Agent.builder()
+    .name("StreamingBot")
+    .instructions("You are helpful")
+    .build();
+
+// Stream responses
+swarm.runAndStream(agent, messages, contextVars, null, false, 10, true)
+    .subscribe(
+        event -> {
+            String eventType = (String) event.get("type");
+            if ("delta".equals(eventType)) {
+                Map<String, Object> data = (Map<String, Object>) event.get("data");
+                String content = (String) data.get("content");
+                if (content != null) {
+                    System.out.print(content); // Real-time streaming
+                }
+            }
+        },
+        error -> System.err.println("Error: " + error.getMessage()),
+        () -> System.out.println("\nStreaming complete!")
+    );
+```
+
+### HTTPS Configuration
+```java
+import com.swarm.client.StreamingOpenAIClient;
+import okhttp3.OkHttpClient;
+import java.util.concurrent.TimeUnit;
+
+// Custom HTTPS client with timeouts
+OkHttpClient httpClient = new OkHttpClient.Builder()
+    .connectTimeout(30, TimeUnit.SECONDS)
+    .readTimeout(120, TimeUnit.SECONDS)
+    .build();
+
+StreamingOpenAIClient client = new StreamingOpenAIClient(apiKey, httpClient);
+Swarm swarm = new Swarm(apiKey, client);
 ```
 
 ## Development
@@ -245,13 +309,31 @@ This Java implementation provides equivalent functionality to the Python Swarm f
 | Multi-turn Conversations | ✅ | ✅ |
 | Debug Mode | ✅ | ✅ |
 | CLI Interface | ✅ | ✅ |
-| Streaming | ✅ | ⚠️ (Planned) |
+| Streaming Responses | ✅ | ✅ |
+| HTTPS Support | ✅ | ✅ |
+| SSL/TLS Configuration | ⚠️ | ✅ |
+| Proxy Support | ⚠️ | ✅ |
+| Connection Pooling | ⚠️ | ✅ |
 
 ## Limitations
 
-- Streaming responses are not yet implemented
 - Limited to OpenAI models (no Claude support yet)
 - Function parameter introspection is more limited than Python
+- Requires Java 17+ (higher than some environments)
+
+## Roadmap
+
+- [x] Streaming response support
+- [x] HTTPS client with SSL/TLS configuration
+- [x] Connection pooling and proxy support
+- [ ] Claude API integration
+- [ ] Web interface
+- [ ] More built-in functions
+- [ ] Agent handoff capabilities
+- [ ] Configuration file support
+- [ ] Docker containerization
+- [ ] Reactive streams integration
+- [ ] WebSocket support for real-time communication
 
 ## Contributing
 

@@ -64,6 +64,15 @@ Tool result: Echo: Hello World
 Assistant: I've echoed your message: "Hello World"
 ```
 
+### Streaming Responses
+```
+You: toggle-stream
+Streaming enabled
+You: Tell me a story about robots
+Assistant: Once upon a time, in a world where technology had advanced beyond imagination, there lived a small robot named Zara...
+[Text appears in real-time as the AI generates it]
+```
+
 ## Command Line Options
 
 ### Single Message Mode
@@ -86,11 +95,22 @@ java -jar target/java-swarm-1.0.0.jar --interactive --model gpt-4o-mini
 java -jar target/java-swarm-1.0.0.jar --interactive --agent-name "MathBot" --instructions "You are a mathematics expert."
 ```
 
+### Streaming Mode
+```bash
+java -jar target/java-swarm-1.0.0.jar --interactive --stream
+```
+
+### Single Message with Streaming
+```bash
+java -jar target/java-swarm-1.0.0.jar --input "Tell me about quantum computing" --stream
+```
+
 ## Interactive Commands
 
 While in interactive mode:
 - `help` - Show available commands and functions
 - `clear` - Clear conversation history
+- `toggle-stream` - Toggle streaming mode on/off
 - `quit` or `exit` - Exit the program
 
 ## Available Functions
