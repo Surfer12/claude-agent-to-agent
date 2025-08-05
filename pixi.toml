@@ -55,7 +55,7 @@ old-cli = { cmd = "python cli.py --interactive --tools think file_read file_writ
 [dependencies]
 anthropic = ">=0.54.0,<0.55"
 pip = ">=25.1.1,<26"
-max = ">=25.5.0.dev2025061605,<26"
+max = ">=25.6.0.dev2025073105,<26"
 aiohttp = ">=3.8.0,<4"
 aiostream = ">=0.4.5,<0.5"
 jsonschema = ">=4.22.0,<5"
