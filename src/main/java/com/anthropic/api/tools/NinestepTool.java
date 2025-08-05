@@ -53,7 +53,6 @@ public class NinestepTool extends BaseTool {
         LOGGER.info(LICENSE_INFO);
     }
     
-    @Override
     public Map<String, Object> execute(Map<String, Object> parameters) {
         Map<String, Object> result = new HashMap<>();
         
@@ -384,12 +383,10 @@ public class NinestepTool extends BaseTool {
         return defaultValue;
     }
     
-    @Override
     public boolean requiresPrivilegedAccess() {
         return true; // Consciousness framework requires elevated permissions
     }
     
-    @Override
     public String[] getRequiredCapabilities() {
         return new String[]{
             "consciousness_framework", 
@@ -405,7 +402,6 @@ public class NinestepTool extends BaseTool {
         };
     }
     
-    @Override
     public Map<String, Object> getInputSchema() {
         Map<String, Object> schema = new HashMap<>();
         schema.put("type", "object");

@@ -51,7 +51,6 @@ public class UPOFTool extends BaseTool {
         LOGGER.info("Version: " + VERSION);
     }
     
-    @Override
     public Map<String, Object> execute(Map<String, Object> parameters) {
         Map<String, Object> result = new HashMap<>();
         
@@ -499,12 +498,10 @@ public class UPOFTool extends BaseTool {
         return defaultValue;
     }
     
-    @Override
     public boolean requiresPrivilegedAccess() {
         return true;
     }
     
-    @Override
     public String[] getRequiredCapabilities() {
         return new String[]{
             "consciousness_framework",
@@ -516,7 +513,6 @@ public class UPOFTool extends BaseTool {
         };
     }
     
-    @Override
     public Map<String, Object> getInputSchema() {
         Map<String, Object> schema = new HashMap<>();
         schema.put("type", "object");

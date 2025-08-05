@@ -41,7 +41,6 @@ public class SwiftSwarmTool extends BaseTool {
         LOGGER.info(LICENSE_INFO);
     }
     
-    @Override
     public Map<String, Object> execute(Map<String, Object> parameters) {
         Map<String, Object> result = new HashMap<>();
         
@@ -335,17 +334,14 @@ public class SwiftSwarmTool extends BaseTool {
         return defaultValue;
     }
     
-    @Override
     public boolean requiresPrivilegedAccess() {
         return true; // Mathematical proofs may require elevated permissions
     }
     
-    @Override
     public String[] getRequiredCapabilities() {
         return new String[]{"mathematical_computation", "consciousness_framework", "proof_validation"};
     }
     
-    @Override
     public Map<String, Object> getInputSchema() {
         Map<String, Object> schema = new HashMap<>();
         schema.put("type", "object");
