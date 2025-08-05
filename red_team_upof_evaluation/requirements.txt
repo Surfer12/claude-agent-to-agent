@@ -1,14 +1,31 @@
-# Core dependencies for UPOF Red Team Evaluation Framework
+# Core dependencies for UPOF Red Team Evaluation Framework v2.0
 numpy>=1.21.0
 sympy>=1.9.0
 networkx>=2.6.0
 scipy>=1.7.0
+
+# Statistical analysis and scientific computing
+scipy>=1.7.0
+statsmodels>=0.13.0
+
+# YAML configuration
+pyyaml>=6.0
 
 # JSON and data handling
 json5>=0.9.0
 
 # Date and time handling
 python-dateutil>=2.8.0
+
+# Dashboard and visualization
+streamlit>=1.28.0
+plotly>=5.15.0
+pandas>=1.3.0
+matplotlib>=3.5.0
+
+# Code execution and automation
+subprocess32>=3.5.4  # For Python < 3.2 compatibility
+tempfile>=1.0.0
 
 # Optional: For advanced mathematical computations
 matplotlib>=3.5.0
@@ -26,3 +43,14 @@ anthropic>=0.3.0
 pytest>=6.0.0
 black>=21.0.0
 flake8>=3.9.0
+
+# Security and sandboxing (optional)
+docker>=6.0.0  # For containerized code execution
+seccomp>=1.0.0  # For system call filtering
+
+# Monitoring and logging
+structlog>=23.0.0
+rich>=13.0.0  # For enhanced terminal output
+
+# Configuration management
+pydantic>=2.0.0  # For configuration validation
