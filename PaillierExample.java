@@ -1,7 +1,23 @@
 
+package com.anthropic.crypto;
+
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
+/**
+ * Paillier Cryptosystem Implementation Example
+ * 
+ * This class demonstrates the Paillier cryptosystem, a probabilistic asymmetric algorithm
+ * for public key cryptography that supports homomorphic addition operations.
+ * 
+ * The Paillier cryptosystem allows for:
+ * - Encryption and decryption of messages
+ * - Homomorphic addition of encrypted values
+ * - Semantic security under chosen-plaintext attacks
+ * 
+ * @author Claude Agent Framework
+ * @version 1.0
+ */
 public class PaillierExample {
     private static class PaillierKeyPair {
         public final BigInteger n;      // Public key component
