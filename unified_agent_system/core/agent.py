@@ -125,13 +125,33 @@ class UnifiedAgent(Agent):
         })
         
         # Get tools for this interaction
-        tools = self.tool_registry.get_active_tools()
-        tool_schema = self.provider.get_tool_schema(tools)
+        base_tools = self.tool_registry.get_active_tools()
+        
+        # Convert BaseTool objects to Tool objects
+        from .types import Tool
+        tools = []
+        for base_tool in base_tools:
+            tool = Tool(
+                name=base_tool.name,
+                description=base_tool.description,
+                parameters=base_tool.get_input_schema()
+            )
+            tools.append(tool)
+        
+        # Convert message history to Message objects
+        message_objects = []
+        for msg_dict in self.message_history:
+            message_objects.append(Message(
+                role=msg_dict["role"],
+                content=msg_dict["content"],
+                tool_calls=msg_dict.get("tool_calls"),
+                tool_results=msg_dict.get("tool_results")
+            ))
         
         # Create message with provider
         response = await self.provider.generate_response(
-            messages=self.message_history,
-            tools=tool_schema
+            messages=message_objects,
+            tools=tools
         )
         
         # Add assistant response to history

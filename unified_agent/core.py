@@ -72,10 +72,16 @@ class UnifiedAgent:
         )
         
         # Add assistant response to history
-        self.message_history.append({
+        assistant_message = {
             "role": "assistant",
             "content": response.get("content", [])
-        })
+        }
+        
+        # Include tool_calls in the assistant message if present
+        if "tool_calls" in response:
+            assistant_message["tool_calls"] = response["tool_calls"]
+        
+        self.message_history.append(assistant_message)
         
         # Handle tool calls if present
         if "tool_calls" in response:

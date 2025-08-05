@@ -6,6 +6,7 @@ import argparse
 import asyncio
 import os
 import sys
+import signal
 import importlib.util
 from typing import Optional
 
@@ -284,6 +285,9 @@ Examples:
             except EOFError:
                 print("\n[Agent] End of input. Goodbye!")
                 break
+            except asyncio.CancelledError:
+                print("\n[Agent] Session cancelled. Goodbye!")
+                break
             except Exception as e:
                 print(f"[Error] {str(e)}")
 
@@ -359,6 +363,9 @@ Examples:
             except EOFError:
                 print("\n[Swarm] End of input. Goodbye!")
                 break
+            except asyncio.CancelledError:
+                print("\n[Swarm] Session cancelled. Goodbye!")
+                break
             except Exception as e:
                 print(f"[Error] {str(e)}")
 
@@ -410,14 +417,53 @@ Examples:
             sys.exit(1)
 
 
-def main():
-    """Main entry point for CLI."""
+async def async_main():
+    """Async main function with proper signal handling."""
     cli = CLIInterface()
     parser = cli.create_parser()
     args = parser.parse_args()
     
-    # Run the CLI
-    asyncio.run(cli.run(args))
+    # Create a task for the CLI run
+    task = asyncio.create_task(cli.run(args))
+    
+    def signal_handler():
+        """Handle shutdown signals gracefully."""
+        print("\n[Agent] Shutting down gracefully...")
+        task.cancel()
+    
+    # Set up signal handlers for graceful shutdown
+    if hasattr(signal, 'SIGTERM'):
+        signal.signal(signal.SIGTERM, lambda s, f: signal_handler())
+    if hasattr(signal, 'SIGINT'):
+        signal.signal(signal.SIGINT, lambda s, f: signal_handler())
+    
+    try:
+        await task
+    except asyncio.CancelledError:
+        # Task was cancelled, this is expected during graceful shutdown
+        pass
+    except KeyboardInterrupt:
+        # Handle Ctrl+C gracefully
+        print("\n[Agent] Interrupted. Goodbye!")
+    except Exception as e:
+        print(f"[Error] Unexpected error: {e}")
+        return 1
+    
+    return 0
+
+
+def main():
+    """Main entry point for CLI."""
+    try:
+        exit_code = asyncio.run(async_main())
+        sys.exit(exit_code)
+    except KeyboardInterrupt:
+        # Final fallback for KeyboardInterrupt
+        print("\n[Agent] Goodbye!")
+        sys.exit(0)
+    except Exception as e:
+        print(f"[Error] Fatal error: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

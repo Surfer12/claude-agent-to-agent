@@ -209,10 +209,10 @@ class OpenAIProvider(ProviderInterface):
             else:
                 # Handle regular messages
                 if isinstance(content, str):
-                    openai_messages.append({
+                    msg = {
                         "role": role,
                         "content": content
-                    })
+                    }
                 else:
                     # Handle content blocks
                     text_content = []
@@ -220,10 +220,35 @@ class OpenAIProvider(ProviderInterface):
                         if block["type"] == "text":
                             text_content.append(block["text"])
                     
-                    openai_messages.append({
+                    msg = {
                         "role": role,
                         "content": " ".join(text_content)
-                    })
+                    }
+                
+                # Add tool_calls if present (for assistant messages)
+                if "tool_calls" in message:
+                    # Convert tool_calls to OpenAI format
+                    import json
+                    openai_tool_calls = []
+                    for tool_call in message["tool_calls"]:
+                        # Ensure arguments are a JSON string
+                        arguments = tool_call["input"]
+                        if isinstance(arguments, dict):
+                            arguments = json.dumps(arguments)
+                        elif not isinstance(arguments, str):
+                            arguments = json.dumps(arguments)
+                        
+                        openai_tool_calls.append({
+                            "id": tool_call["id"],
+                            "type": "function",
+                            "function": {
+                                "name": tool_call["name"],
+                                "arguments": arguments
+                            }
+                        })
+                    msg["tool_calls"] = openai_tool_calls
+                
+                openai_messages.append(msg)
         
         return openai_messages
     
@@ -242,16 +267,23 @@ class OpenAIProvider(ProviderInterface):
         
         if message.tool_calls:
             for tool_call in message.tool_calls:
+                # Parse arguments from JSON string
+                try:
+                    import json
+                    arguments = json.loads(tool_call.function.arguments)
+                except (json.JSONDecodeError, TypeError):
+                    arguments = tool_call.function.arguments
+                
                 tool_calls.append({
                     "id": tool_call.id,
                     "name": tool_call.function.name,
-                    "input": tool_call.function.arguments
+                    "input": arguments
                 })
                 content.append({
                     "type": "tool_use",
                     "id": tool_call.id,
                     "name": tool_call.function.name,
-                    "input": tool_call.function.arguments
+                    "input": arguments
                 })
         
         return {

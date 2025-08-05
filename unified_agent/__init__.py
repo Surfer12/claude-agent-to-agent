@@ -9,7 +9,6 @@ from .core import UnifiedAgent
 from .types import AgentConfig, ProviderType
 from .providers import ClaudeProvider, OpenAIProvider
 from .tool_registry import ToolRegistry
-from .cli import CLIInterface
 from .computer_use import ComputerUseInterface
 
 __version__ = "1.0.0"
@@ -20,6 +19,5 @@ __all__ = [
     "ClaudeProvider",
     "OpenAIProvider",
     "ToolRegistry",
-    "CLIInterface",
     "ComputerUseInterface"
 ] 

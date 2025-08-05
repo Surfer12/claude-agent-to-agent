@@ -249,7 +249,137 @@ class OpenAIProvider(BaseProvider, ProviderInterface):
     def __init__(self, config: AgentConfig):
         """Initialize OpenAI provider."""
         super().__init__(config)
-        self.client = AsyncOpenAI(api_key=config.api_key)
+    
+    def _create_client(self) -> Any:
+        """Create OpenAI client."""
+        return AsyncOpenAI(api_key=self.config.api_key)
+    
+    def format_messages(self, messages: List[Message]) -> List[Dict[str, Any]]:
+        """Format messages for OpenAI."""
+        formatted = []
+        for msg in messages:
+            # Handle different content types
+            if isinstance(msg.content, str):
+                formatted.append({
+                    "role": msg.role,
+                    "content": msg.content
+                })
+            elif isinstance(msg.content, list):
+                # Handle content blocks (like from Claude format)
+                text_content = []
+                for block in msg.content:
+                    if isinstance(block, dict) and block.get("type") == "text":
+                        text_content.append(block.get("text", ""))
+                    elif isinstance(block, str):
+                        text_content.append(block)
+                
+                formatted.append({
+                    "role": msg.role,
+                    "content": " ".join(text_content) if text_content else ""
+                })
+            
+            # Handle tool calls if present
+            if msg.tool_calls:
+                tool_calls = []
+                for call in msg.tool_calls:
+                    tool_calls.append({
+                        "id": call.get("id"),
+                        "type": "function",
+                        "function": {
+                            "name": call.get("name"),
+                            "arguments": json.dumps(call.get("input", {}))
+                        }
+                    })
+                if formatted:
+                    formatted[-1]["tool_calls"] = tool_calls
+            
+            # Handle tool results
+            if msg.tool_results:
+                for result in msg.tool_results:
+                    formatted.append({
+                        "role": "tool",
+                        "tool_call_id": result.get("tool_call_id"),
+                        "content": str(result.get("content", ""))
+                    })
+        
+        return formatted
+    
+    def format_tools(self, tools: List[Tool]) -> List[Dict[str, Any]]:
+        """Format tools for OpenAI."""
+        formatted = []
+        for tool in tools:
+            formatted.append({
+                "type": "function",
+                "function": {
+                    "name": tool.name,
+                    "description": tool.description,
+                    "parameters": tool.parameters
+                }
+            })
+        return formatted
+    
+    async def generate_response(
+        self,
+        messages: List[Message],
+        tools: List[Tool]
+    ) -> Dict[str, Any]:
+        """Generate response using OpenAI."""
+        formatted_messages = self.format_messages(messages)
+        formatted_tools = self.format_tools(tools) if tools else None
+        
+        params = {
+            "model": self.config.model,
+            "messages": formatted_messages,
+            "max_tokens": self.config.max_tokens,
+            "temperature": self.config.temperature,
+        }
+        
+        if formatted_tools:
+            params["tools"] = formatted_tools
+            params["tool_choice"] = "auto"
+        
+        response = await self.client.chat.completions.create(**params)
+        
+        content = []
+        tool_calls = []
+        
+        message = response.choices[0].message
+        
+        if message.content:
+            content.append({
+                "type": "text",
+                "text": message.content
+            })
+        
+        if message.tool_calls:
+            for tool_call in message.tool_calls:
+                # Parse the arguments JSON string
+                try:
+                    arguments = json.loads(tool_call.function.arguments)
+                except json.JSONDecodeError:
+                    arguments = {}
+                
+                tool_calls.append({
+                    "id": tool_call.id,
+                    "name": tool_call.function.name,
+                    "input": arguments
+                })
+                content.append({
+                    "type": "tool_use",
+                    "id": tool_call.id,
+                    "name": tool_call.function.name,
+                    "input": arguments
+                })
+        
+        return {
+            "content": content,
+            "tool_calls": tool_calls,
+            "usage": {
+                "input_tokens": response.usage.prompt_tokens,
+                "output_tokens": response.usage.completion_tokens,
+                "total_tokens": response.usage.total_tokens
+            }
+        }
     
     async def create_message(
         self,
