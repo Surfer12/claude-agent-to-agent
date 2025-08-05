@@ -3,10 +3,15 @@
 import asyncio
 import json
 import os
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from .core.base import BaseProvider
 from .core.types import AgentConfig, Message, Tool, ToolResult
+
+from anthropic import Anthropic
+from openai import AsyncOpenAI
+
+from .core.types import ProviderInterface
 
 
 class MockProvider(BaseProvider):
@@ -47,45 +52,38 @@ class MockProvider(BaseProvider):
         return [tool.to_dict() for tool in tools]
 
 
-class ClaudeProvider(BaseProvider):
+class ClaudeProvider(BaseProvider, ProviderInterface):
     """Claude provider implementation."""
     
-    def _create_client(self):
-        """Create the Anthropic client."""
-        api_key = self.config.api_key or os.getenv("ANTHROPIC_API_KEY")
-        if not api_key:
-            raise ValueError("ANTHROPIC_API_KEY not found in environment or config")
-        
-        try:
-            from anthropic import Anthropic
-            return Anthropic(api_key=api_key)
-        except ImportError:
-            raise ImportError("anthropic package not installed. Run: pip install anthropic")
+    def __init__(self, config: AgentConfig):
+        """Initialize Claude provider."""
+        super().__init__(config)
+        self.client = Anthropic(api_key=config.api_key)
     
-    async def generate_response(
-        self, 
-        messages: List[Message], 
-        tools: List[Tool]
+    async def create_message(
+        self,
+        messages: List[Dict[str, Any]],
+        tools: Optional[List[Dict[str, Any]]] = None,
+        **kwargs
     ) -> Dict[str, Any]:
-        """Generate a response from Claude."""
-        # Format messages for Claude
-        claude_messages = self.format_messages(messages)
+        """Create a message with Claude."""
+        # Convert messages to Claude format
+        claude_messages = self._convert_messages_to_claude_format(messages)
         
         # Prepare parameters
         params = {
-            "model": self.config.model or "claude-3-5-sonnet-20241022",
+            "model": self.config.model,
             "messages": claude_messages,
-            "max_tokens": self.config.max_tokens,
-            "temperature": self.config.temperature,
+            "max_tokens": kwargs.get("max_tokens", self.config.max_tokens),
+            "temperature": kwargs.get("temperature", self.config.temperature),
+            "system": kwargs.get("system", self.config.system_prompt),
         }
-        
-        # Add system prompt if provided
-        if self.config.system_prompt:
-            params["system"] = self.config.system_prompt
         
         # Add tools if provided
         if tools:
-            params["tools"] = self.format_tools(tools)
+            params["tools"] = tools
+            # Add beta headers for tools
+            params["betas"] = self._get_beta_headers(tools)
         
         # Create message
         response = await asyncio.to_thread(
@@ -94,48 +92,46 @@ class ClaudeProvider(BaseProvider):
         )
         
         # Convert response to unified format
-        return self._convert_claude_response(response)
+        return self._convert_claude_response_to_unified(response)
     
-    def format_messages(self, messages: List[Message]) -> List[Dict[str, Any]]:
-        """Format messages for Claude."""
+    def get_tool_schema(self, tools: List[Any]) -> List[Dict[str, Any]]:
+        """Convert tools to Claude schema."""
+        return [tool.to_dict() for tool in tools]
+    
+    def _convert_messages_to_claude_format(self, messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Convert unified message format to Claude format."""
         claude_messages = []
         
         for message in messages:
-            if message.role == "system":
-                # System messages are handled separately in Claude
-                continue
+            role = message["role"]
+            content = message["content"]
             
-            claude_message = {
-                "role": message.role,
-                "content": message.content
-            }
-            
-            # Handle tool calls and results
-            if message.tool_calls:
-                # Convert tool calls to Claude format
-                content_blocks = []
-                if isinstance(message.content, str):
-                    content_blocks.append({"type": "text", "text": message.content})
-                
-                for tool_call in message.tool_calls:
-                    content_blocks.append({
-                        "type": "tool_use",
-                        "id": tool_call["id"],
-                        "name": tool_call["name"],
-                        "input": tool_call.get("input", {})
+            if role == "tool":
+                # Handle tool results
+                claude_messages.append({
+                    "role": "user",
+                    "content": [{
+                        "type": "tool_result",
+                        "tool_use_id": message.get("tool_call_id"),
+                        "content": content
+                    }]
+                })
+            else:
+                # Handle regular messages
+                if isinstance(content, str):
+                    claude_messages.append({
+                        "role": role,
+                        "content": content
                     })
-                
-                claude_message["content"] = content_blocks
-            
-            claude_messages.append(claude_message)
+                else:
+                    claude_messages.append({
+                        "role": role,
+                        "content": content
+                    })
         
         return claude_messages
     
-    def format_tools(self, tools: List[Tool]) -> List[Dict[str, Any]]:
-        """Format tools for Claude."""
-        return [tool.to_dict() for tool in tools]
-    
-    def _convert_claude_response(self, response) -> Dict[str, Any]:
+    def _convert_claude_response_to_unified(self, response) -> Dict[str, Any]:
         """Convert Claude response to unified format."""
         content = []
         tool_calls = []
@@ -162,108 +158,116 @@ class ClaudeProvider(BaseProvider):
         return {
             "content": content,
             "tool_calls": tool_calls,
-            "usage": {
-                "input_tokens": response.usage.input_tokens,
-                "output_tokens": response.usage.output_tokens,
-                "total_tokens": response.usage.input_tokens + response.usage.output_tokens
-            }
+            "usage": response.usage
         }
+    
+    def _get_beta_headers(self, tools: List[Dict[str, Any]]) -> List[str]:
+        """Get beta headers needed for tools."""
+        betas = []
+        
+        # Check for computer use tools
+        computer_tools = [tool for tool in tools if tool.get("name") == "computer"]
+        if computer_tools:
+            model = self.config.model.lower()
+            if "claude-4" in model or "claude-sonnet-3.7" in model or "claude-sonnet-4" in model:
+                betas.append("computer-use-2025-01-24")
+            elif "claude-sonnet-3.5" in model:
+                betas.append("computer-use-2024-10-22")
+            else:
+                betas.append("computer-use-2025-01-24")
+        
+        # Check for code execution tools
+        code_execution_tools = [tool for tool in tools if "code_execution" in tool.get("tool_type", "")]
+        if code_execution_tools:
+            betas.append("code-execution-2025-05-22")
+            
+            # Check if any code execution tools support files
+            for tool in code_execution_tools:
+                if tool.get("supports_files", False):
+                    betas.append("files-api-2025-04-14")
+                    break
+        
+        return betas
 
 
-class OpenAIProvider(BaseProvider):
+class OpenAIProvider(BaseProvider, ProviderInterface):
     """OpenAI provider implementation."""
     
-    def _create_client(self):
-        """Create the OpenAI client."""
-        api_key = self.config.api_key or os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            raise ValueError("OPENAI_API_KEY not found in environment or config")
-        
-        try:
-            from openai import AsyncOpenAI
-            return AsyncOpenAI(api_key=api_key)
-        except ImportError:
-            raise ImportError("openai package not installed. Run: pip install openai")
+    def __init__(self, config: AgentConfig):
+        """Initialize OpenAI provider."""
+        super().__init__(config)
+        self.client = AsyncOpenAI(api_key=config.api_key)
     
-    async def generate_response(
-        self, 
-        messages: List[Message], 
-        tools: List[Tool]
+    async def create_message(
+        self,
+        messages: List[Dict[str, Any]],
+        tools: Optional[List[Dict[str, Any]]] = None,
+        **kwargs
     ) -> Dict[str, Any]:
-        """Generate a response from OpenAI."""
-        # Format messages for OpenAI
-        openai_messages = self.format_messages(messages)
+        """Create a message with OpenAI."""
+        # Convert messages to OpenAI format
+        openai_messages = self._convert_messages_to_openai_format(messages)
         
         # Prepare parameters
         params = {
-            "model": self.config.model or "gpt-4o",
+            "model": self.config.model,
             "messages": openai_messages,
-            "max_tokens": self.config.max_tokens,
-            "temperature": self.config.temperature,
+            "max_tokens": kwargs.get("max_tokens", self.config.max_tokens),
+            "temperature": kwargs.get("temperature", self.config.temperature),
         }
         
         # Add tools if provided
         if tools:
-            params["tools"] = self.format_tools(tools)
+            params["tools"] = tools
             params["tool_choice"] = "auto"
         
         # Create message
         response = await self.client.chat.completions.create(**params)
         
         # Convert response to unified format
-        return self._convert_openai_response(response)
+        return self._convert_openai_response_to_unified(response)
     
-    def format_messages(self, messages: List[Message]) -> List[Dict[str, Any]]:
-        """Format messages for OpenAI."""
+    def get_tool_schema(self, tools: List[Any]) -> List[Dict[str, Any]]:
+        """Convert tools to OpenAI schema."""
+        return [tool.to_openai_dict() for tool in tools]
+    
+    def _convert_messages_to_openai_format(self, messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Convert unified message format to OpenAI format."""
         openai_messages = []
         
         for message in messages:
-            openai_message = {
-                "role": message.role,
-                "content": message.content
-            }
+            role = message["role"]
+            content = message["content"]
             
-            # Handle tool calls
-            if message.tool_calls:
-                openai_message["tool_calls"] = []
-                for tool_call in message.tool_calls:
-                    openai_message["tool_calls"].append({
-                        "id": tool_call["id"],
-                        "type": "function",
-                        "function": {
-                            "name": tool_call["name"],
-                            "arguments": json.dumps(tool_call.get("input", {}))
-                        }
-                    })
-            
-            # Handle tool results
-            if message.tool_results:
-                for tool_result in message.tool_results:
+            if role == "tool":
+                # Handle tool results
+                openai_messages.append({
+                    "role": "tool",
+                    "content": content,
+                    "tool_call_id": message.get("tool_call_id")
+                })
+            else:
+                # Handle regular messages
+                if isinstance(content, str):
                     openai_messages.append({
-                        "role": "tool",
-                        "content": str(tool_result.get("content", "")),
-                        "tool_call_id": tool_result.get("tool_call_id")
+                        "role": role,
+                        "content": content
                     })
-            
-            openai_messages.append(openai_message)
+                else:
+                    # Handle content blocks
+                    text_content = []
+                    for block in content:
+                        if block["type"] == "text":
+                            text_content.append(block["text"])
+                    
+                    openai_messages.append({
+                        "role": role,
+                        "content": " ".join(text_content)
+                    })
         
         return openai_messages
     
-    def format_tools(self, tools: List[Tool]) -> List[Dict[str, Any]]:
-        """Format tools for OpenAI."""
-        openai_tools = []
-        for tool in tools:
-            openai_tools.append({
-                "type": "function",
-                "function": {
-                    "name": tool.name,
-                    "description": tool.description,
-                    "parameters": tool.parameters
-                }
-            })
-        return openai_tools
-    
-    def _convert_openai_response(self, response) -> Dict[str, Any]:
+    def _convert_openai_response_to_unified(self, response) -> Dict[str, Any]:
         """Convert OpenAI response to unified format."""
         content = []
         tool_calls = []
@@ -278,29 +282,20 @@ class OpenAIProvider(BaseProvider):
         
         if message.tool_calls:
             for tool_call in message.tool_calls:
-                try:
-                    arguments = json.loads(tool_call.function.arguments)
-                except json.JSONDecodeError:
-                    arguments = {}
-                
                 tool_calls.append({
                     "id": tool_call.id,
                     "name": tool_call.function.name,
-                    "input": arguments
+                    "input": tool_call.function.arguments
                 })
                 content.append({
                     "type": "tool_use",
                     "id": tool_call.id,
                     "name": tool_call.function.name,
-                    "input": arguments
+                    "input": tool_call.function.arguments
                 })
         
         return {
             "content": content,
             "tool_calls": tool_calls,
-            "usage": {
-                "input_tokens": response.usage.prompt_tokens,
-                "output_tokens": response.usage.completion_tokens,
-                "total_tokens": response.usage.total_tokens
-            }
+            "usage": response.usage
         }

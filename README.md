@@ -2,6 +2,188 @@
 
 A provider-agnostic agent framework that supports both Claude and OpenAI backends, with unified CLI, computer use, and multi-agent swarm capabilities.
 
+## 🎯 Pixi Integration Complete
+
+### **📋 New Files Created**
+java-swarm/
+├── pixi.toml                      # Main Pixi configuration
+├── PIXI_USAGE.md                  # Complete Pixi usage guide
+├── scripts/
+│   ├── setup-env.sh              # Environment setup script
+│   └── validate-pixi.sh          # Pixi configuration validator
+└── examples/
+    └── custom-pixi-tasks.toml     # Custom task examples
+
+
+### **🚀 Available Pixi Commands**
+
+#### **Build & Development**
+bash
+pixi run build              # Build the project
+pixi run compile            # Compile source only
+pixi run test              # Run unit tests
+pixi run clean             # Clean build artifacts
+pixi run rebuild           # Clean and rebuild
+pixi run dev               # Development mode
+
+
+#### **Interactive Chat**
+bash
+pixi run interactive              # Basic interactive mode
+pixi run interactive-debug        # Interactive with debug
+pixi run interactive-stream       # Interactive with streaming
+pixi run interactive-stream-debug # Interactive with streaming + debug
+
+
+#### **Single Messages**
+bash
+pixi run chat "Your message"           # Send single message
+pixi run chat-stream "Your message"    # Send with streaming
+pixi run chat-debug "Your message"     # Send with debug info
+
+
+#### **Specialized Agents**
+bash
+pixi run math-bot          # Mathematics expert
+pixi run code-bot          # Programming expert
+pixi run story-bot         # Creative storyteller (with streaming)
+
+
+#### **Model Selection**
+bash
+pixi run gpt4              # Use GPT-4o
+pixi run gpt4-mini         # Use GPT-4o-mini
+pixi run gpt35             # Use GPT-3.5-turbo
+
+
+#### **Examples & Demos**
+bash
+pixi run streaming-demo    # Demonstrate streaming
+pixi run calculator-demo   # Demonstrate function calling
+pixi run https-demo        # Demonstrate HTTPS configuration
+
+
+#### **Quick Start**
+bash
+pixi run quick-start       # Build and run interactively
+pixi run quick-stream      # Build and run with streaming
+
+
+### **🛠 Key Features**
+
+1. Automatic Dependency Management: Pixi handles Java 17+ and Maven installation
+2. Environment Isolation: Each project has its own isolated environment
+3. Cross-Platform: Works on macOS, Linux, and Windows
+4. Task Dependencies: Tasks automatically ensure prerequisites are met
+5. Multiple Environments: Support for dev, test, and production environments
+6. Custom Tasks: Easy to add custom agent configurations and workflows
+
+### **📖 Usage Examples**
+
+#### **Quick Start**
+bash
+# Install Pixi
+curl -fsSL https://pixi.sh/install.sh | bash
+
+# Setup project
+pixi install
+
+# Set API key
+export OPENAI_API_KEY="your-key-here"
+
+# Start chatting
+pixi run quick-start
+
+
+#### **Development Workflow**
+bash
+# Build and test
+pixi run rebuild
+
+# Start development mode
+pixi run dev
+
+# Test streaming
+pixi run interactive-stream
+
+# Run demos
+pixi run streaming-demo
+
+
+#### **Specialized Use Cases**
+bash
+# Math tutoring
+pixi run math-bot
+
+# Code assistance
+pixi run code-bot
+
+# Creative writing with streaming
+pixi run story-bot
+
+
+### **🔧 Advanced Features**
+
+#### **Multiple Environments**
+bash
+pixi run -e dev interactive     # Development environment
+pixi run -e test unit-tests     # Testing environment
+pixi run -e prod interactive    # Production environment
+
+
+#### **Custom Tasks**
+Users can easily add custom tasks to pixi.toml:
+toml
+[tasks]
+my-agent = "java -jar target/java-swarm-1.0.0.jar --interactive --agent-name MyBot --instructions 'Custom instructions'"
+
+
+#### **Task Dependencies**
+Tasks automatically handle dependencies:
+toml
+[tasks]
+chat = { cmd = "java -jar target/java-swarm-1.0.0.jar --input", depends_on = ["ensure-built"] }
+
+
+### **📚 Documentation**
+
+1. PIXI_USAGE.md: Complete reference for all Pixi commands
+2. Updated README.md: Includes Pixi as the recommended installation method
+3. Updated QUICKSTART.md: Pixi-first approach with fallback to manual
+4. Custom task examples: Shows how to extend functionality
+
+### **✅ Benefits of Pixi Integration**
+
+1. Simplified Setup: One command installs everything needed
+2. Consistent Environment: Same environment across all developers
+3. Easy Commands: Memorable, short commands instead of long Java CLI
+4. Cross-Platform: Works identically on all operating systems
+5. Dependency Management: Automatic handling of Java and Maven versions
+6. Task Organization: Logical grouping of related commands
+7. Environment Isolation: No conflicts with system-installed tools
+
+### **🎯 Example Workflows**
+
+#### **New User Experience**
+bash
+# Complete setup in 3 commands
+curl -fsSL https://pixi.sh/install.sh | bash
+pixi install
+pixi run quick-start
+
+
+#### **Daily Development**
+bash
+pixi run dev               # Start development
+pixi run test              # Run tests
+pixi run streaming-demo    # Test features
+
+
+#### **Production Usage**
+bash
+pixi run -e prod build     # Production build
+pixi run interactive       # Run application
+
 ## Features
 
 - **Provider Agnostic**: Switch seamlessly between Claude and OpenAI
