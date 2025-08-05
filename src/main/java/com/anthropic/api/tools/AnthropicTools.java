@@ -368,7 +368,7 @@ public final class AnthropicTools {
      */
     public static List<String> getAvailableToolTypes() {
         return Arrays.asList("bash", "web_search", "weather", "text_editor", "code_execution", "computer",
-                             "upof_processor", "ninestep", "swift_swarm_proof");
+                             "upof_processor", "upof_framework", "ninestep", "ninestep_framework", "swift_swarm_proof");
     }
 
     /**
@@ -389,11 +389,13 @@ public final class AnthropicTools {
             case "computer":
                 return Optional.of(createComputerTool());
             case "upof_processor":
-                return Optional.of(new UPOFTool());
+            case "upof_framework":
+                return Optional.of(new com.anthropic.api.tools.UPOFTool());
             case "ninestep":
-                return Optional.of(new NinestepTool());
+            case "ninestep_framework":
+                return Optional.of(new com.anthropic.api.tools.NinestepTool());
             case "swift_swarm_proof":
-                return Optional.of(new SwiftSwarmTool());
+                return Optional.of(new com.anthropic.api.tools.SwiftSwarmTool());
             default:
                 return Optional.empty();
         }
