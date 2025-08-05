@@ -45,6 +45,34 @@ java-swarm/
 
 ## Installation
 
+### Option 1: Using Pixi (Recommended)
+
+[Pixi](https://pixi.sh) provides the easiest way to get started with Java Swarm:
+
+1. Install Pixi:
+```bash
+curl -fsSL https://pixi.sh/install.sh | bash
+```
+
+2. Clone and setup:
+```bash
+git clone <repository-url>
+cd java-swarm
+pixi install
+```
+
+3. Set your OpenAI API key:
+```bash
+export OPENAI_API_KEY="your-openai-api-key-here"
+```
+
+4. Start using Java Swarm:
+```bash
+pixi run quick-start
+```
+
+### Option 2: Manual Installation
+
 1. Clone the repository:
 ```bash
 git clone <repository-url>
@@ -63,7 +91,47 @@ mvn clean package
 
 ## Usage
 
-### Command Line Interface
+### Using Pixi (Recommended)
+
+#### Quick Start
+```bash
+pixi run interactive        # Basic interactive mode
+pixi run interactive-stream # Interactive with streaming
+pixi run quick-start       # Build and run interactively
+```
+
+#### Single Messages
+```bash
+pixi run chat "Hello, how are you?"
+pixi run chat-stream "Tell me a story"
+pixi run chat-debug "Calculate 15 * 23"
+```
+
+#### Specialized Agents
+```bash
+pixi run math-bot          # Mathematics expert
+pixi run code-bot          # Programming expert  
+pixi run story-bot         # Creative storyteller with streaming
+```
+
+#### Model Selection
+```bash
+pixi run gpt4              # Use GPT-4o
+pixi run gpt4-mini         # Use GPT-4o-mini
+pixi run gpt35             # Use GPT-3.5-turbo
+```
+
+#### Development
+```bash
+pixi run build             # Build the project
+pixi run test              # Run tests
+pixi run dev               # Development mode
+pixi run streaming-demo    # Demo streaming functionality
+```
+
+See [PIXI_USAGE.md](PIXI_USAGE.md) for complete Pixi command reference.
+
+### Command Line Interface (Manual)
 
 #### Interactive Mode
 ```bash

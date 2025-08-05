@@ -1,0 +1,120 @@
+[project]
+name = "java-swarm"
+version = "1.0.0"
+description = "Java implementation of the Swarm multi-agent framework"
+authors = ["Java Swarm Contributors"]
+channels = ["conda-forge"]
+platforms = ["osx-64", "osx-arm64", "linux-64", "win-64"]
+
+[dependencies]
+# Java and Maven dependencies
+openjdk = ">=17"
+maven = ">=3.6"
+
+[tasks]
+# Build tasks
+build = "mvn clean package"
+compile = "mvn compile"
+test = "mvn test"
+clean = "mvn clean"
+
+# CLI tasks - Interactive mode
+interactive = "java -jar target/java-swarm-1.0.0.jar --interactive"
+interactive-debug = "java -jar target/java-swarm-1.0.0.jar --interactive --debug"
+interactive-stream = "java -jar target/java-swarm-1.0.0.jar --interactive --stream"
+interactive-stream-debug = "java -jar target/java-swarm-1.0.0.jar --interactive --stream --debug"
+
+# CLI tasks - Single message mode
+chat = { cmd = "java -jar target/java-swarm-1.0.0.jar --input", depends_on = ["ensure-built"] }
+chat-stream = { cmd = "java -jar target/java-swarm-1.0.0.jar --input --stream", depends_on = ["ensure-built"] }
+chat-debug = { cmd = "java -jar target/java-swarm-1.0.0.jar --input --debug", depends_on = ["ensure-built"] }
+
+# Model-specific tasks
+gpt4 = "java -jar target/java-swarm-1.0.0.jar --interactive --model gpt-4o"
+gpt4-mini = "java -jar target/java-swarm-1.0.0.jar --interactive --model gpt-4o-mini"
+gpt35 = "java -jar target/java-swarm-1.0.0.jar --interactive --model gpt-3.5-turbo"
+
+# Specialized agent tasks
+math-bot = "java -jar target/java-swarm-1.0.0.jar --interactive --agent-name MathBot --instructions 'You are a mathematics expert who loves solving complex problems.'"
+code-bot = "java -jar target/java-swarm-1.0.0.jar --interactive --agent-name CodeBot --instructions 'You are a programming expert who helps with code analysis and debugging.'"
+story-bot = "java -jar target/java-swarm-1.0.0.jar --interactive --stream --agent-name StoryBot --instructions 'You are a creative storyteller who writes engaging narratives.'"
+
+# Development tasks
+dev = { cmd = "mvn compile exec:java -Dexec.mainClass=com.swarm.cli.SwarmCLI -Dexec.args='--interactive --debug'", depends_on = ["compile"] }
+dev-stream = { cmd = "mvn compile exec:java -Dexec.mainClass=com.swarm.cli.SwarmCLI -Dexec.args='--interactive --debug --stream'", depends_on = ["compile"] }
+
+# Example tasks
+run-streaming-example = { cmd = "mvn compile exec:java -Dexec.mainClass=StreamingExample", depends_on = ["compile"] }
+run-https-example = { cmd = "mvn compile exec:java -Dexec.mainClass=HttpsConfigExample", depends_on = ["compile"] }
+run-basic-example = { cmd = "mvn compile exec:java -Dexec.mainClass=BasicUsageExample", depends_on = ["compile"] }
+
+# Utility tasks
+help = "java -jar target/java-swarm-1.0.0.jar --help"
+version = "java -jar target/java-swarm-1.0.0.jar --version"
+test-connection = { cmd = "java -cp target/java-swarm-1.0.0.jar com.swarm.core.Swarm", depends_on = ["ensure-built"] }
+
+# Quick start tasks
+quick-start = { depends_on = ["build", "interactive"] }
+quick-stream = { depends_on = ["build", "interactive-stream"] }
+
+# Maintenance tasks
+rebuild = { depends_on = ["clean", "build"] }
+full-test = { depends_on = ["clean", "compile", "test", "build"] }
+
+# Helper task to ensure JAR is built
+ensure-built = { cmd = "test -f target/java-swarm-1.0.0.jar || mvn package -q" }
+
+[feature.examples.tasks]
+# Example-specific tasks that require the examples to be compiled
+streaming-demo = """
+echo "=== Java Swarm Streaming Demo ==="
+echo "This will demonstrate real-time streaming responses..."
+echo ""
+java -jar target/java-swarm-1.0.0.jar --input "Tell me a detailed story about a robot learning to paint" --stream
+"""
+
+calculator-demo = """
+echo "=== Java Swarm Calculator Demo ==="
+echo "This will demonstrate function calling with the calculator..."
+echo ""
+java -jar target/java-swarm-1.0.0.jar --input "Can you calculate the result of (15 * 23) + (45 / 3) - 7?" --debug
+"""
+
+https-demo = """
+echo "=== Java Swarm HTTPS Configuration Demo ==="
+echo "This will test various HTTPS configurations..."
+echo ""
+mvn compile exec:java -Dexec.mainClass=HttpsConfigExample
+"""
+
+[feature.development.tasks]
+# Development-specific tasks
+watch = "mvn compile exec:java -Dexec.mainClass=com.swarm.cli.SwarmCLI -Dexec.args='--interactive --debug' & echo 'Watching for changes...'"
+debug-verbose = "java -DDEBUG=true -jar target/java-swarm-1.0.0.jar --interactive --debug --stream"
+profile = "java -XX:+FlightRecorder -XX:StartFlightRecording=duration=60s,filename=swarm-profile.jfr -jar target/java-swarm-1.0.0.jar --interactive"
+
+[feature.testing.tasks]
+# Testing-specific tasks
+unit-tests = "mvn test"
+integration-tests = "mvn verify"
+test-with-coverage = "mvn test jacoco:report"
+test-streaming = """
+echo "Testing streaming functionality..."
+timeout 10s java -jar target/java-swarm-1.0.0.jar --input "Count from 1 to 10 slowly" --stream || echo "Streaming test completed"
+"""
+
+[environments]
+# Default environment
+default = { features = [], solve-group = "default" }
+
+# Development environment with additional tools
+dev = { features = ["examples", "development"], solve-group = "dev" }
+
+# Testing environment
+test = { features = ["testing"], solve-group = "test" }
+
+# Production environment (minimal dependencies)
+prod = { features = [], solve-group = "prod" }
+
+[activation]
+scripts = ["scripts/setup-env.sh"]
