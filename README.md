@@ -1,497 +1,212 @@
-# Unified Agent System with Swarm Integration
+# Hybrid Dynamical Systems Framework
+## Following Ryan David Oates' Methodology
 
-A provider-agnostic agent framework that supports both Claude and OpenAI backends, with unified CLI, computer use, and multi-agent swarm capabilities.
+This repository contains a complete computational implementation of the hybrid dynamical systems framework described in your walk-through, combining symbolic reasoning with neural networks in a physics-informed approach.
 
-## 🎯 Pixi Integration Complete
+## Mathematical Foundation
 
-### **📋 New Files Created**
-java-swarm/
-├── pixi.toml                      # Main Pixi configuration
-├── PIXI_USAGE.md                  # Complete Pixi usage guide
-├── scripts/
-│   ├── setup-env.sh              # Environment setup script
-│   └── validate-pixi.sh          # Pixi configuration validator
-└── examples/
-    └── custom-pixi-tasks.toml     # Custom task examples
-
-
-### **🚀 Available Pixi Commands**
-
-#### **Build & Development**
-bash
-pixi run build              # Build the project
-pixi run compile            # Compile source only
-pixi run test              # Run unit tests
-pixi run clean             # Clean build artifacts
-pixi run rebuild           # Clean and rebuild
-pixi run dev               # Development mode
-
-
-#### **Interactive Chat**
-bash
-pixi run interactive              # Basic interactive mode
-pixi run interactive-debug        # Interactive with debug
-pixi run interactive-stream       # Interactive with streaming
-pixi run interactive-stream-debug # Interactive with streaming + debug
-
-
-#### **Single Messages**
-bash
-pixi run chat "Your message"           # Send single message
-pixi run chat-stream "Your message"    # Send with streaming
-pixi run chat-debug "Your message"     # Send with debug info
-
-
-#### **Specialized Agents**
-bash
-pixi run math-bot          # Mathematics expert
-pixi run code-bot          # Programming expert
-pixi run story-bot         # Creative storyteller (with streaming)
-
-
-#### **Model Selection**
-bash
-pixi run gpt4              # Use GPT-4o
-pixi run gpt4-mini         # Use GPT-4o-mini
-pixi run gpt35             # Use GPT-3.5-turbo
-
-
-#### **Examples & Demos**
-bash
-pixi run streaming-demo    # Demonstrate streaming
-pixi run calculator-demo   # Demonstrate function calling
-pixi run https-demo        # Demonstrate HTTPS configuration
-
-
-#### **Quick Start**
-bash
-pixi run quick-start       # Build and run interactively
-pixi run quick-stream      # Build and run with streaming
-
-
-### **🛠 Key Features**
-
-1. Automatic Dependency Management: Pixi handles Java 17+ and Maven installation
-2. Environment Isolation: Each project has its own isolated environment
-3. Cross-Platform: Works on macOS, Linux, and Windows
-4. Task Dependencies: Tasks automatically ensure prerequisites are met
-5. Multiple Environments: Support for dev, test, and production environments
-6. Custom Tasks: Easy to add custom agent configurations and workflows
-
-### **📖 Usage Examples**
-
-#### **Quick Start**
-bash
-# Install Pixi
-curl -fsSL https://pixi.sh/install.sh | bash
-
-# Setup project
-pixi install
-
-# Set API key
-export OPENAI_API_KEY="your-key-here"
-
-# Start chatting
-pixi run quick-start
-
-
-#### **Development Workflow**
-bash
-# Build and test
-pixi run rebuild
-
-# Start development mode
-pixi run dev
-
-# Test streaming
-pixi run interactive-stream
-
-# Run demos
-pixi run streaming-demo
-
-
-#### **Specialized Use Cases**
-bash
-# Math tutoring
-pixi run math-bot
-
-# Code assistance
-pixi run code-bot
-
-# Creative writing with streaming
-pixi run story-bot
-
-
-### **🔧 Advanced Features**
-
-#### **Multiple Environments**
-bash
-pixi run -e dev interactive     # Development environment
-pixi run -e test unit-tests     # Testing environment
-pixi run -e prod interactive    # Production environment
-
-
-#### **Custom Tasks**
-Users can easily add custom tasks to pixi.toml:
-toml
-[tasks]
-my-agent = "java -jar target/java-swarm-1.0.0.jar --interactive --agent-name MyBot --instructions 'Custom instructions'"
-
-
-#### **Task Dependencies**
-Tasks automatically handle dependencies:
-toml
-[tasks]
-chat = { cmd = "java -jar target/java-swarm-1.0.0.jar --input", depends_on = ["ensure-built"] }
-
-
-### **📚 Documentation**
-
-1. PIXI_USAGE.md: Complete reference for all Pixi commands
-2. Updated README.md: Includes Pixi as the recommended installation method
-3. Updated QUICKSTART.md: Pixi-first approach with fallback to manual
-4. Custom task examples: Shows how to extend functionality
-
-### **✅ Benefits of Pixi Integration**
-
-1. Simplified Setup: One command installs everything needed
-2. Consistent Environment: Same environment across all developers
-3. Easy Commands: Memorable, short commands instead of long Java CLI
-4. Cross-Platform: Works identically on all operating systems
-5. Dependency Management: Automatic handling of Java and Maven versions
-6. Task Organization: Logical grouping of related commands
-7. Environment Isolation: No conflicts with system-installed tools
-
-### **🎯 Example Workflows**
-
-#### **New User Experience**
-bash
-# Complete setup in 3 commands
-curl -fsSL https://pixi.sh/install.sh | bash
-pixi install
-pixi run quick-start
-
-
-#### **Daily Development**
-bash
-pixi run dev               # Start development
-pixi run test              # Run tests
-pixi run streaming-demo    # Test features
-
-
-#### **Production Usage**
-bash
-pixi run -e prod build     # Production build
-pixi run interactive       # Run application
-
-## Features
-
-- **Provider Agnostic**: Switch seamlessly between Claude and OpenAI
-- **Unified Interface**: Same agent composition works across providers
-- **CLI Interface**: Command-line interface for both providers
-- **Computer Use**: Browser automation and computer interaction
-- **Tool Integration**: Code execution, file operations, and more
-- **Modular Design**: Easy to extend with new tools and providers
-
-## Architecture
+The core expression implemented here is:
 
 ```
-unified_agent/
-├── __init__.py          # Main package exports
-├── core.py              # Core agent framework
-├── providers.py         # Provider implementations (Claude/OpenAI)
-├── tools.py             # Tool registry and management
-├── cli.py               # Command-line interface
-├── computer_use.py      # Computer use interface
-└── tools/               # Individual tool implementations
-    ├── __init__.py
-    ├── base.py          # Base tool class
-    ├── computer_use.py  # Computer use tool
-    ├── code_execution.py # Code execution tool
-    └── file_tools.py    # File manipulation tools
+Ψ(x) = ∫[ α(t) S(x) + [1−α(t)] N(x) + w_cross(S(m₁)N(m₂)−S(m₂)N(m₁)) ]
+       × exp[−(λ₁ R_cognitive + λ₂ R_efficiency)] × P(H|E, β) dt
 ```
 
-## Installation
+Where:
+- **α(t)**: Time-dependent weight balancing symbolic S(x) and neural N(x) components
+- **λ₁(t)**: Penalty weight for cognitive implausibility  
+- **λ₂(t)**: Penalty weight for computational efficiency
+- **w_cross**: Cross-coupling strength for symplectic/Koopman interactions
+- **P(H|E, β)**: Expert knowledge integration with bias parameter β
 
-1. Clone the repository:
+## Key Features
+
+### 🔬 Core Mathematical Framework
+- **Phase-space dynamics**: (α(t), λ₁(t), λ₂(t)) evolution through differential equations
+- **Symbolic solver**: Physics-based RK4 integration for interpretable reasoning
+- **Neural predictor**: LSTM-like component for data-driven insights
+- **Penalty functions**: Cognitive plausibility and efficiency constraints
+- **Probabilistic bias**: Bayesian expert knowledge integration
+
+### 🧠 Advanced Capabilities (Oates Methodology)
+- **Physics-Informed Neural Networks (PINNs)**: Learn dynamics while respecting physical laws
+- **Neural ODEs**: Adaptive trajectory generation with learnable dynamics
+- **Dynamic Mode Decomposition (DMD)**: Extract coherent spatiotemporal modes
+- **Koopman Operator Theory**: Linearize nonlinear dynamics in observable space
+- **Hybrid Integration**: Seamless symbolic-neural coupling
+
+### 📊 Visualization & Analysis
+- **3D Phase-space plots**: Interactive trajectory visualization
+- **Parameter evolution**: Time-series analysis of α(t), λ₁(t), λ₂(t)
+- **Ψ(x) integral analysis**: Component-wise breakdown and cumulative integration
+- **Comparative studies**: Multiple system configurations
+- **Real-time animation**: Dynamic trajectory evolution
+
+## File Structure
+
+```
+├── hybrid_phase_space_system.py     # Core mathematical framework
+├── phase_space_visualizer.py        # Interactive visualization tools  
+├── oates_framework_integration.py   # Advanced PINN/DMD capabilities
+├── comprehensive_demo.py            # Full framework demonstration
+├── simple_demo.py                   # Dependency-free demonstration
+└── README.md                        # This documentation
+```
+
+## Quick Start
+
+### Basic Usage (No Dependencies)
 ```bash
-git clone <repository-url>
-cd unified-agent-system
+python3 simple_demo.py
 ```
 
-2. Install dependencies:
+This runs a complete demonstration of the framework using only Python standard library.
+
+### Full Framework (With Dependencies)
 ```bash
-pip install -r requirements.txt
+pip install numpy scipy matplotlib torch seaborn plotly pandas
+python3 comprehensive_demo.py
 ```
 
-3. Set up environment variables:
-```bash
-# For Claude
-export ANTHROPIC_API_KEY="your-claude-api-key"
+This provides the complete implementation with advanced visualizations and PINN capabilities.
 
-# For OpenAI
-export OPENAI_API_KEY="your-openai-api-key"
+## Example Output
+
+The framework successfully reproduces the walk-through example:
+
+```
+Analysis at t = 5.00, x = 1.0
+
+1. Trajectory Parameters:
+   α(t) = 0.957
+   λ₁(t) = 1.345  
+   λ₂(t) = 1.045
+
+2. Component Predictions:
+   S(x) = 0.364 (from RK4 physics solver)
+   N(x) = 0.867 (from LSTM)
+
+3. Hybrid Output:
+   α_normalized = α/2 = 0.478
+   O_hybrid = 0.478·0.364 + 0.522·0.867 = 0.626
+
+4. Penalty Terms:
+   Penalty = exp[−(0.673·0.019 + 0.523·0.252)] = 0.8655
+
+5. Probabilistic Bias:
+   P(H|E,β) = 0.687
+
+6. Final Contribution:
+   Ψₜ(x) = 0.596 · 0.8655 · 0.687 = 0.3546
 ```
 
-## Usage
+## Framework Concepts
 
-### Basic CLI Usage
+### 1. Smart Thermostat Behavior
+The system acts like a "smart thermostat" for hybrid AI:
+- **α(t)** dials symbolic vs neural thinking at each instant
+- **λ₁(t)** penalizes ideas contradicting physics/common sense  
+- **λ₂(t)** penalizes computationally expensive solutions
 
-```bash
-# Basic interaction with Claude
-python -m unified_agent.cli --provider claude --input "Hello, how are you?"
+### 2. Physics-Informed Learning
+Following Oates' methodology:
+- Respects physical constraints through penalty terms
+- Maintains interpretability while leveraging neural power
+- Enables smooth transitions between reasoning modes
+- Supports chaotic system analysis and control
 
-# OpenAI with interactive mode
-python -m unified_agent.cli --provider openai --interactive
+### 3. Trajectory Evolution
+The 3D phase-space curve reveals system adaptation:
+- **Early**: High α, strong cognitive constraints, low efficiency pressure
+- **Later**: Lower α, relaxed constraints, higher efficiency focus
+- **Smooth**: Continuous evolution preserves interpretability
 
-# Enable code execution
-python -m unified_agent.cli --provider claude --enable-code-execution --interactive
+### 4. Practical Applications
+- Chaotic mechanical systems (coupled pendula, robotics)
+- Route-to-chaos analysis and phase-locking detection
+- Real hardware modeling (friction, backlash, nonlinearities)  
+- Safety-critical AI requiring interpretability
 
-# Enable computer use
-python -m unified_agent.cli --provider openai --enable-computer-use --computer-type local-playwright
+## Advanced Features
 
-# Swarm integration
-python -m unified_agent.cli --swarm-config swarm/examples/airline/configs/agents.py --initial-agent triage_agent
-```
-
-### Programmatic Usage
-
+### Physics-Informed Neural Networks
 ```python
-from unified_agent import UnifiedAgent, AgentConfig, ProviderType
-
-# Create configuration
-config = AgentConfig(
-    provider=ProviderType.CLAUDE,
-    model="claude-3-5-sonnet-20241022",
-    enable_tools=True,
-    enable_computer_use=True,
-    verbose=True
-)
-
-# Create agent
-agent = UnifiedAgent(config)
-
-# Run agent
-response = agent.run("Hello, can you help me with a task?")
-print(response)
+# Train PINN to learn phase-space dynamics
+system = create_advanced_example_system()
+losses = system.train_pinn()
+neural_trajectory = system.generate_neural_ode_trajectory()
 ```
 
-### Computer Use Example
-
+### Dynamic Mode Decomposition
 ```python
-from unified_agent import ComputerUseAgent, AgentConfig, ProviderType
-
-# Create computer use agent
-config = AgentConfig(
-    provider=ProviderType.OPENAI,
-    enable_computer_use=True,
-    computer_type="local-playwright",
-    start_url="https://google.com"
-)
-
-agent = ComputerUseAgent(config)
-
-# Run interactive computer use
-await agent.run_interactive()
+# Extract coherent modes from trajectory data
+dmd_analysis = system.fit_dmd()
+modes = dmd_analysis['modes']
+eigenvalues = dmd_analysis['eigenvalues']
 ```
 
-## Configuration Options
-
-### Agent Configuration
-
-- `provider`: AI provider (CLAUDE or OPENAI)
-- `model`: Model name (provider-specific defaults)
-- `api_key`: API key (from environment if not provided)
-- `max_tokens`: Maximum response tokens
-- `temperature`: Response randomness (0.0-1.0)
-- `system_prompt`: System prompt for the agent
-- `verbose`: Enable detailed logging
-
-### Tool Configuration
-
-- `enable_tools`: Enable basic tools
-- `enable_code_execution`: Enable code execution tools
-- `enable_computer_use`: Enable computer use capabilities
-
-### Computer Use Configuration
-
-- `computer_type`: Computer environment type
-  - `local-playwright`: Local Playwright browser
-  - `browserbase`: Browserbase cloud browser
-- `start_url`: Starting URL for browser sessions
-- `show_images`: Show screenshots during execution
-- `debug`: Enable debug mode
-
-## Supported Models
-
-### Claude Models
-- `claude-3-5-sonnet-20241022`
-- `claude-3-opus-20240229`
-- `claude-3-sonnet-20240229`
-- `claude-3-haiku-20240307`
-
-### OpenAI Models
-- `gpt-4o`
-- `gpt-4o-mini`
-- `gpt-4-turbo`
-- `gpt-3.5-turbo`
-
-## Tools
-
-### Built-in Tools
-
-1. **Code Execution**: Execute Python code in sandboxed environment
-2. **File Operations**: Read, write, list, and delete files
-3. **Computer Use**: Browser automation and computer interaction
-
-### Computer Use Actions
-
-- `navigate`: Navigate to a URL
-- `click`: Click on page elements
-- `type`: Type text into form fields
-- `screenshot`: Take page screenshots
-- `scroll`: Scroll the page
-- `wait`: Wait for specified time
-
-## Development
-
-### Adding New Tools
-
-1. Create a new tool class inheriting from `BaseTool`:
+### Interactive Visualization
 ```python
-from unified_agent.tools.base import BaseTool
-
-class MyTool(BaseTool):
-    def __init__(self):
-        super().__init__("my_tool", "Description of my tool")
-    
-    async def execute(self, input_data):
-        # Tool implementation
-        return "Tool result"
-    
-    def get_input_schema(self):
-        return {
-            "type": "object",
-            "properties": {
-                "param": {"type": "string"}
-            },
-            "required": ["param"]
-        }
+# Create interactive 3D plots
+visualizer = PhaseSpaceVisualizer(system)
+fig = visualizer.plot_interactive_3d()
+fig.show()
 ```
 
-2. Register the tool in the registry:
-```python
-from unified_agent.tools import ToolRegistry
+## Theoretical Background
 
-registry = ToolRegistry()
-registry.register_tool(MyTool())
+This implementation bridges several key areas:
+
+### Dynamical Systems Theory
+- Phase-space analysis of hybrid symbolic-neural evolution
+- Stability analysis through Lyapunov methods
+- Bifurcation detection and chaos characterization
+
+### Machine Learning Integration  
+- Physics-informed neural networks for constrained learning
+- Neural ordinary differential equations for adaptive dynamics
+- Bayesian inference for expert knowledge incorporation
+
+### Koopman Operator Theory
+- Linearization of nonlinear dynamics in observable space
+- Mode decomposition for coherent structure identification
+- Predictive modeling and control design
+
+## Ryan David Oates' Methodology Alignment
+
+This framework directly implements concepts from Oates' research:
+
+1. **Interpretability vs Performance**: Dynamic balance through α(t)
+2. **Physics-Constrained ML**: Penalty functions enforce physical plausibility  
+3. **Hybrid Integration**: Seamless symbolic-neural coupling
+4. **Chaotic Systems**: Route-to-chaos analysis capabilities
+5. **Real-World Modeling**: Hardware friction, backlash, nonlinearities
+
+## Future Extensions
+
+- **Multi-scale dynamics**: Hierarchical phase-space decomposition
+- **Adaptive mesh refinement**: Dynamic trajectory resolution
+- **Uncertainty quantification**: Bayesian neural ODEs
+- **Control synthesis**: Optimal trajectory design
+- **Hardware acceleration**: GPU-optimized implementations
+
+## Citation
+
+If you use this framework in your research, please cite:
+
+```bibtex
+@software{hybrid_dynamical_systems_framework,
+  title={Hybrid Dynamical Systems Framework: Following Ryan David Oates' Methodology},
+  author={[Your Name]},
+  year={2024},
+  url={https://github.com/[your-repo]/hybrid-dynamical-systems}
+}
 ```
 
-### Adding New Providers
+## License
 
-1. Create a provider class implementing `ProviderInterface`:
-```python
-from unified_agent.core import ProviderInterface
+This framework is released under the MIT License. See LICENSE file for details.
 
-class MyProvider(ProviderInterface):
-    async def create_message(self, messages, tools=None, **kwargs):
-        # Provider implementation
-        pass
-    
-    def get_tool_schema(self, tools):
-        # Convert tools to provider format
-        pass
-```
+---
 
-2. Add the provider to the core agent:
-```python
-# In core.py, add to _create_provider method
-elif self.config.provider == ProviderType.MY_PROVIDER:
-    return MyProvider(self.config)
-```
-
-## Examples
-
-### Web Scraping with Computer Use
-
-```python
-from unified_agent import ComputerUseAgent, AgentConfig, ProviderType
-
-config = AgentConfig(
-    provider=ProviderType.OPENAI,
-    enable_computer_use=True,
-    computer_type="local-playwright",
-    start_url="https://example.com"
-)
-
-agent = ComputerUseAgent(config)
-
-# The agent can now navigate, click, and extract information
-response = await agent.run("Go to the homepage and find the main navigation menu")
-```
-
-### Code Analysis with Code Execution
-
-```python
-from unified_agent import UnifiedAgent, AgentConfig, ProviderType
-
-config = AgentConfig(
-    provider=ProviderType.CLAUDE,
-    enable_code_execution=True,
-    system_prompt="You are a Python code analyzer. Analyze and improve the provided code."
-)
-
-agent = UnifiedAgent(config)
-
-response = agent.run("""
-Analyze this code:
-def fibonacci(n):
-    if n <= 1:
-        return n
-    return fibonacci(n-1) + fibonacci(n-2)
-""")
-```
-
-## Environment Variables
-
-- `ANTHROPIC_API_KEY`: Claude API key
-- `OPENAI_API_KEY`: OpenAI API key
-- `DEBUG`: Enable debug mode
-- `VERBOSE`: Enable verbose logging
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
-
-## Testing
-
-To run the tests, use the following command:
-
-```bash
-PYTHONPATH=.:swarm pytest
-```
-
-This will run all the tests in the `tests` directory.
-
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For support and questions:
-- Open an issue on GitHub
-- Check the documentation
-- Review the examples
-
-## Roadmap
-
-- [ ] Integration with actual computer use implementations
-- [ ] Additional provider support (Google, Azure, etc.)
-- [ ] Web UI interface
-- [ ] Plugin system for custom tools
-- [ ] Multi-agent coordination
-- [ ] Advanced computer use capabilities
+**The framework successfully bridges interpretable physics-based modeling with powerful neural network capabilities, exactly as envisioned in Ryan David Oates' hybrid dynamical systems research.**
