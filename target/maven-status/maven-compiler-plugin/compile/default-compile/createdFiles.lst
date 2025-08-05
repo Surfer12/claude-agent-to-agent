@@ -2,12 +2,14 @@ com/anthropic/api/tools/AnthropicTools$WeatherTool.class
 com/anthropic/api/AnthropicClient$Message.class
 com/anthropic/api/response/MessageResponse.class
 com/anthropic/api/MessageCreateParams.class
+com/anthropic/crypto/PaillierExample.class
 com/anthropic/api/tools/AnthropicTools.class
 com/anthropic/api/AnthropicClient$GeneratePromptRequest.class
 com/anthropic/api/cli/CognitiveAgentCLI$Builder.class
 com/anthropic/api/tools/AnthropicTools$ComputerTool.class
 com/anthropic/cli/EnhancedCLI.class
 com/anthropic/api/response/MessageResponse$Usage.class
+com/anthropic/crypto/PaillierExample$PaillierKeyPair.class
 com/anthropic/api/AnthropicClientEnhanced$Message.class
 com/anthropic/api/tools/AnthropicTools$BashTool.class
 com/anthropic/api/tools/AnthropicTools$BaseTool.class

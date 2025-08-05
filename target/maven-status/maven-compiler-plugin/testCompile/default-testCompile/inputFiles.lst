@@ -1,0 +1,7 @@
+/Users/ryan_david_oates/claude-agent-to-agent/src/test/java/com/anthropic/api/MessageCreateParamsTest.java
+/Users/ryan_david_oates/claude-agent-to-agent/src/test/java/com/anthropic/api/AnthropicClientTest.java
+/Users/ryan_david_oates/claude-agent-to-agent/src/test/java/com/anthropic/cli/EnhancedCLILeafNodeTest.java
+/Users/ryan_david_oates/claude-agent-to-agent/src/test/java/com/anthropic/examples/BasicUsageExampleLeafNodeTest.java
+/Users/ryan_david_oates/claude-agent-to-agent/src/test/java/com/anthropic/api/response/MessageResponseTest.java
+/Users/ryan_david_oates/claude-agent-to-agent/src/test/java/com/anthropic/api/AnthropicClientLeafNodeTest.java
+/Users/ryan_david_oates/claude-agent-to-agent/src/test/java/com/anthropic/crypto/PaillierExampleTest.java

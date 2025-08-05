@@ -9,6 +9,7 @@ import sys
 from typing import Optional
 
 from .core import UnifiedAgent, AgentConfig, ProviderType
+from swarm import Swarm, Agent
 
 
 class CLIInterface:
@@ -36,6 +37,9 @@ Examples:
   
   # Computer use with specific start URL
   python -m unified_agent.cli --provider openai --enable-computer-use --start-url https://google.com
+
+  # Swarm interactive mode
+  python -m unified_agent.cli --enable-swarm
             """
         )
         
@@ -97,6 +101,11 @@ Examples:
             "--enable-computer-use",
             action="store_true",
             help="Enable computer use capabilities"
+        )
+        parser.add_argument(
+            "--enable-swarm",
+            action="store_true",
+            help="Enable Swarm agent mode"
         )
         
         # Computer use settings
@@ -251,10 +260,67 @@ Examples:
                 break
             except Exception as e:
                 print(f"[Error] {str(e)}")
-    
+
+    async def run_swarm_interactive(self):
+        """Run swarm in interactive mode."""
+        print("\n[Swarm] Interactive mode started. Type 'exit' to quit.")
+        
+        client = Swarm()
+        
+        # Define agents
+        agent_b = Agent(
+            name="Agent B",
+            instructions="Only speak in Haikus.",
+        )
+
+        def transfer_to_agent_b():
+            return agent_b
+
+        agent_a = Agent(
+            name="Agent A",
+            instructions="You are a helpful agent. You can transfer to Agent B.",
+            functions=[transfer_to_agent_b],
+        )
+
+        messages = []
+        while True:
+            try:
+                user_input = input("> ").strip()
+
+                if user_input.lower() == 'exit':
+                    print("[Swarm] Goodbye!")
+                    break
+                elif not user_input:
+                    continue
+                
+                messages.append({"role": "user", "content": user_input})
+
+                response = client.run(
+                    agent=agent_a,
+                    messages=messages,
+                )
+                
+                # The last message is the response from the swarm
+                last_message = response.messages[-1]
+                messages.append(last_message)
+                
+                print(f"\n[Swarm] {last_message['content']}")
+
+            except KeyboardInterrupt:
+                print("\n[Swarm] Interrupted. Type 'exit' to quit.")
+            except EOFError:
+                print("\n[Swarm] End of input. Goodbye!")
+                break
+            except Exception as e:
+                print(f"[Error] {str(e)}")
+
     async def run(self, args):
         """Run the CLI interface."""
         try:
+            if args.enable_swarm:
+                await self.run_swarm_interactive()
+                return
+
             # Create configuration
             config = self.create_config(args)
             
@@ -304,4 +370,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main()

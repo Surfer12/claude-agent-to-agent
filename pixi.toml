@@ -89,3 +89,7 @@ pytest-xdist = ">=3.5.0,<4"
 
 # MCP (Model Context Protocol) support
 mcp = ">=1.0.0,<2"
+
+# Java development dependencies
+maven = ">=3.9.0,<4"
+openjdk = ">=17,<18"
