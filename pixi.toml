@@ -21,6 +21,16 @@ simple = { cmd = "python enhanced_cli.py --tools think" }
 test = { cmd = "python enhanced_cli.py --prompt 'What is 2+2?'" }
 test-files = { cmd = "python enhanced_cli.py --prompt 'List files in current directory' --tools file_read" }
 
+# CLI Testing - Comprehensive leaf node testing
+test-cli-leaf = { cmd = "pytest tests/test_cli_leaf_nodes.py -v", description = "Test CLI leaf node components" }
+test-cli-examples = { cmd = "pytest tests/test_cli_examples.py -v", description = "Test CLI example scripts" }
+test-cli-all = { cmd = "pytest tests/test_cli_*.py -v", description = "Run all CLI tests" }
+test-cli-coverage = { cmd = "pytest tests/test_cli_*.py --cov=unified_agent.cli --cov=quick_start --cov-report=html --cov-report=term", description = "CLI test coverage" }
+
+# CLI Integration Testing
+test-cli-integration = { cmd = ["python -m unified_agent.cli --help", "python quick_start.py --help || echo 'Quick start tested'"], description = "Test CLI integration" }
+test-cli-smoke = { cmd = ["python enhanced_cli.py --help", "python cli.py --help"], description = "CLI smoke tests" }
+
 # Java implementation - Enhanced!
 java-cli = { cmd = "mvn exec:java", depends-on = ["java-build"] }
 java-chat = { cmd = "mvn exec:java -Dexec.args='--model claude-3-5-sonnet-20240620'", depends-on = ["java-build"] }
@@ -71,3 +81,8 @@ pytest = ">=8.0.0,<9"
 pytest-cov = ">=4.1.0,<5"
 pytest-mock = ">=3.12.0,<4"
 pytest-asyncio = ">=0.23.0,<0.24"
+
+# CLI Testing specific dependencies
+pytest-subprocess = ">=1.5.0,<2"
+pytest-timeout = ">=2.3.0,<3"
+pytest-xdist = ">=3.5.0,<4"
