@@ -7,6 +7,7 @@ from typing import Optional
 
 import os
 import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'swarm'))
 import importlib.util
 
 from .core import UnifiedAgent
@@ -22,10 +23,6 @@ def main():
     
     # Run the CLI
     asyncio.run(cli.run(args))
-
-
-if __name__ == "__main__":
-    main()
 
 
 class CLIInterface:
@@ -382,3 +379,6 @@ Examples:
                 import traceback
                 traceback.print_exc()
             sys.exit(1)
+
+if __name__ == "__main__":
+    main()

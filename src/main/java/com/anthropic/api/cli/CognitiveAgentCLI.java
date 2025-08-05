@@ -3,6 +3,7 @@ package com.anthropic.api.cli;
 import com.anthropic.api.AnthropicClientEnhanced;
 import com.anthropic.api.tools.AnthropicTools;
 import com.anthropic.api.tools.AnthropicTools.BaseTool;
+import com.anthropic.api.processors.UPOFProcessor;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -129,6 +130,19 @@ public final class CognitiveAgentCLI {
                     
                     if (userInput.toLowerCase().matches("exit|quit|q")) {
                         break;
+                    }
+                    
+                    if (userInput.toLowerCase().startsWith("@publicationv1")) {
+                        runUPOFMode(userInput.substring(14).trim());
+                        continue;
+                    }
+
+                    if (userInput.toLowerCase().startsWith("@ninestep")) {
+                        UPOFProcessor processor = new UPOFProcessor();
+                        String ninestepResult = processor.applyNinestep(userInput.substring(10).trim());
+                        System.out.println("Ninestep Process Result:\n" + ninestepResult);
+                        LOGGER.info("Applied Ninestep with consciousness protection enabled");
+                        continue;
                     }
                     
                     // Track interaction performance
@@ -269,6 +283,28 @@ public final class CognitiveAgentCLI {
         if (metrics.getLastInteractionTime() != null) {
             LOGGER.info("Last Interaction: " + metrics.getLastInteractionTime());
         }
+    }
+
+    // Add runUPOFMode method
+    private void runUPOFMode(String query) {
+        LOGGER.info("Running UPOF publicationv1 mode for query: " + query);
+        
+        UPOFProcessor processor = new UPOFProcessor();
+        
+        // Simulate inputs (from publicationv1 examples)
+        double S_x = 0.8; // Symbolic output
+        double N_x = 0.3; // Neural output
+        double R_cognitive = 0.5;
+        double R_efficiency = 0.4;
+        double P_H_E = 0.7;
+        
+        double psi = processor.computePsi(S_x, N_x, R_cognitive, R_efficiency, P_H_E);
+        String ninestepResult = processor.applyNinestep(query);
+        double proofResult = processor.simulateSwiftSwarmProof(3.0, 2.0); // Example values
+        
+        System.out.println("UPOF Psi Computation: " + psi);
+        System.out.println(ninestepResult);
+        System.out.println("Swift Swarm Proof Simulation: " + proofResult);
     }
 
     /**

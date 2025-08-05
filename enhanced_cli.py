@@ -26,6 +26,11 @@ from agents.tools.code_execution import (
     is_model_supported
 )
 
+from anthropic import Anthropic
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Configure logging
 logging.basicConfig(level=logging.WARNING)  # Reduce noise
 logger = logging.getLogger(__name__)

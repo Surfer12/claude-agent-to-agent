@@ -55,44 +55,97 @@ class MockProvider(BaseProvider):
 class ClaudeProvider(BaseProvider, ProviderInterface):
     """Claude provider implementation."""
     
+    def _create_client(self) -> Any:
+        return Anthropic(api_key=self.config.api_key)
+    
     def __init__(self, config: AgentConfig):
         """Initialize Claude provider."""
         super().__init__(config)
-        self.client = Anthropic(api_key=config.api_key)
     
-    async def create_message(
+    def format_messages(self, messages: List[Message]) -> List[Dict[str, Any]]:
+        """Format messages for Claude."""
+        formatted = []
+        for msg in messages:
+            content = []
+            if msg.content:
+                content.append({"type": "text", "text": msg.content})
+            if msg.tool_calls:
+                for call in msg.tool_calls:
+                    content.append({
+                        "type": "tool_use",
+                        "id": call.get("id"),
+                        "name": call.get("name"),
+                        "input": call.get("input")
+                    })
+            if msg.tool_results:
+                for result in msg.tool_results:
+                    content.append({
+                        "type": "tool_result",
+                        "tool_use_id": result.get("tool_call_id"),
+                        "content": str(result.get("content"))
+                    })
+            formatted.append({
+                "role": msg.role,
+                "content": content
+            })
+        return formatted
+    
+    def format_tools(self, tools: List[Tool]) -> List[Dict[str, Any]]:
+        """Format tools for Claude."""
+        return [tool.to_dict() for tool in tools]
+    
+    async def generate_response(
         self,
-        messages: List[Dict[str, Any]],
-        tools: Optional[List[Dict[str, Any]]] = None,
-        **kwargs
+        messages: List[Message],
+        tools: List[Tool]
     ) -> Dict[str, Any]:
-        """Create a message with Claude."""
-        # Convert messages to Claude format
-        claude_messages = self._convert_messages_to_claude_format(messages)
+        """Generate response using Claude."""
+        formatted_messages = self.format_messages(messages)
+        formatted_tools = self.format_tools(tools) if tools else None
         
-        # Prepare parameters
         params = {
             "model": self.config.model,
-            "messages": claude_messages,
-            "max_tokens": kwargs.get("max_tokens", self.config.max_tokens),
-            "temperature": kwargs.get("temperature", self.config.temperature),
-            "system": kwargs.get("system", self.config.system_prompt),
+            "messages": formatted_messages,
+            "max_tokens": self.config.max_tokens,
+            "temperature": self.config.temperature,
+            "system": self.config.system_prompt,
         }
         
-        # Add tools if provided
-        if tools:
-            params["tools"] = tools
-            # Add beta headers for tools
-            params["betas"] = self._get_beta_headers(tools)
+        if formatted_tools:
+            params["tools"] = formatted_tools
+            params["extra_headers"] = {"anthropic-beta": "tools-2024-05-16"}
         
-        # Create message
         response = await asyncio.to_thread(
             self.client.messages.create,
             **params
         )
         
-        # Convert response to unified format
-        return self._convert_claude_response_to_unified(response)
+        content = []
+        tool_calls = []
+        for block in response.content:
+            if block.type == "text":
+                content.append({"type": "text", "text": block.text})
+            elif block.type == "tool_use":
+                tool_calls.append({
+                    "id": block.id,
+                    "name": block.name,
+                    "input": block.input
+                })
+                content.append({
+                    "type": "tool_use",
+                    "id": block.id,
+                    "name": block.name,
+                    "input": block.input
+                })
+        
+        return {
+            "content": content,
+            "tool_calls": tool_calls,
+            "usage": {
+                "input_tokens": response.usage.input_tokens,
+                "output_tokens": response.usage.output_tokens
+            }
+        }
     
     def get_tool_schema(self, tools: List[Any]) -> List[Dict[str, Any]]:
         """Convert tools to Claude schema."""

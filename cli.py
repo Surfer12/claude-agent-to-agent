@@ -32,6 +32,12 @@ from agents.tools.computer_use import ComputerUseTool
 from agents.tools.code_execution import CodeExecutionTool, CodeExecutionWithFilesTool, is_model_supported
 from agents.utils.connections import setup_mcp_connections
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from rich.console import Console
+
 # Configure advanced logging with cognitive performance tracking
 logging.basicConfig(
     level=logging.INFO,

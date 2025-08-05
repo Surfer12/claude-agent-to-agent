@@ -265,11 +265,110 @@ public final class AnthropicTools {
         return new ComputerTool(displayWidth, displayHeight, 1);
     }
 
+    // New tool for UPOF processing
+    public static final class UPOFTool extends BaseTool {
+        public UPOFTool() {
+            super(new ToolDefinition(
+                "upof_processor",
+                "upof_20250801",
+                "Process queries using Unified Onto-Phenomenological Consciousness Framework",
+                createUPOFInputSchema(),
+                null,
+                null
+            ));
+        }
+
+        private static Map<String, Object> createUPOFInputSchema() {
+            Map<String, Object> schema = new HashMap<>();
+            schema.put("type", "object");
+            
+            Map<String, Object> properties = new HashMap<>();
+            
+            Map<String, Object> queryProperty = new HashMap<>();
+            queryProperty.put("type", "string");
+            queryProperty.put("description", "The query to process through UPOF");
+            properties.put("query", queryProperty);
+            
+            schema.put("properties", properties);
+            schema.put("required", Arrays.asList("query"));
+            
+            return schema;
+        }
+    }
+
+    // New tool for Ninestep integration
+    public static final class NinestepTool extends BaseTool {
+        public NinestepTool() {
+            super(new ToolDefinition(
+                "ninestep",
+                "ninestep_20250801",
+                "Apply 9-step AI integration framework with consciousness protection",
+                createNinestepInputSchema(),
+                null,
+                null
+            ));
+        }
+
+        private static Map<String, Object> createNinestepInputSchema() {
+            Map<String, Object> schema = new HashMap<>();
+            schema.put("type", "object");
+            
+            Map<String, Object> properties = new HashMap<>();
+            
+            Map<String, Object> queryProperty = new HashMap<>();
+            queryProperty.put("type", "string");
+            queryProperty.put("description", "The query to process through Ninestep");
+            properties.put("query", queryProperty);
+            
+            schema.put("properties", properties);
+            schema.put("required", Arrays.asList("query"));
+            
+            return schema;
+        }
+    }
+
+    // New tool for Swift Swarm Proof simulation
+    public static final class SwiftSwarmTool extends BaseTool {
+        public SwiftSwarmTool() {
+            super(new ToolDefinition(
+                "swift_swarm_proof",
+                "swift_swarm_20250801",
+                "Simulate mathematical proof elements from swift_swarm_witten",
+                createSwiftSwarmInputSchema(),
+                null,
+                null
+            ));
+        }
+
+        private static Map<String, Object> createSwiftSwarmInputSchema() {
+            Map<String, Object> schema = new HashMap<>();
+            schema.put("type", "object");
+            
+            Map<String, Object> properties = new HashMap<>();
+            
+            Map<String, Object> degreeProperty = new HashMap<>();
+            degreeProperty.put("type", "number");
+            degreeProperty.put("description", "Degree for the simulation");
+            properties.put("degree", degreeProperty);
+            
+            Map<String, Object> contactOrderProperty = new HashMap<>();
+            contactOrderProperty.put("type", "number");
+            contactOrderProperty.put("description", "Contact order for the simulation");
+            properties.put("contact_order", contactOrderProperty);
+            
+            schema.put("properties", properties);
+            schema.put("required", Arrays.asList("degree", "contact_order"));
+            
+            return schema;
+        }
+    }
+
     /**
      * Get all available tool types
      */
     public static List<String> getAvailableToolTypes() {
-        return Arrays.asList("bash", "web_search", "weather", "text_editor", "code_execution", "computer");
+        return Arrays.asList("bash", "web_search", "weather", "text_editor", "code_execution", "computer",
+                             "upof_processor", "ninestep", "swift_swarm_proof");
     }
 
     /**
@@ -289,6 +388,12 @@ public final class AnthropicTools {
                 return Optional.of(createCodeExecutionTool());
             case "computer":
                 return Optional.of(createComputerTool());
+            case "upof_processor":
+                return Optional.of(new UPOFTool());
+            case "ninestep":
+                return Optional.of(new NinestepTool());
+            case "swift_swarm_proof":
+                return Optional.of(new SwiftSwarmTool());
             default:
                 return Optional.empty();
         }

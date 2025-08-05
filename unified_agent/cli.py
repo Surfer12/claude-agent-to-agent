@@ -11,7 +11,24 @@ from typing import Optional
 
 from .core import UnifiedAgent
 from .types import AgentConfig, ProviderType
-from swarm import Swarm, Agent
+try:
+    import sys
+    import os
+    # Add the swarm directory to Python path
+    current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    swarm_dir = os.path.join(current_dir, 'swarm')
+    if swarm_dir not in sys.path:
+        sys.path.insert(0, swarm_dir)
+    
+    from swarm import Swarm, Agent
+except ImportError:
+    # Fallback for different swarm installation paths
+    try:
+        from swarm.swarm import Swarm, Agent
+    except ImportError:
+        print("Warning: Swarm not available. Swarm functionality will be disabled.")
+        Swarm = None
+        Agent = None
 
 
 class CLIInterface:
@@ -272,17 +289,37 @@ Examples:
 
     async def run_swarm_interactive(self, args):
         """Run swarm in interactive mode."""
+        if Swarm is None:
+            print("[Error] Swarm is not available. Please install the swarm package or check your installation.")
+            return
+            
         print("\n[Swarm] Interactive mode started. Type 'exit' to quit.")
         
         if not args.swarm_config:
             print("[Error] No swarm configuration file provided. Use --swarm-config to specify the path.")
             return
 
+        # Add swarm directory to Python path for imports
+        import sys
+        import os
+        swarm_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'swarm')
+        if swarm_dir not in sys.path:
+            sys.path.insert(0, swarm_dir)
+
         try:
             # Dynamically load the swarm configuration
             spec = importlib.util.spec_from_file_location("swarm_config", args.swarm_config)
             swarm_config = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(swarm_config)
+            
+            # Change to the directory containing the config file for relative imports
+            original_cwd = os.getcwd()
+            config_dir = os.path.dirname(os.path.abspath(args.swarm_config))
+            os.chdir(config_dir)
+            
+            try:
+                spec.loader.exec_module(swarm_config)
+            finally:
+                os.chdir(original_cwd)
             
             # Get the initial agent
             initial_agent = getattr(swarm_config, args.initial_agent)
@@ -329,6 +366,9 @@ Examples:
         """Run the CLI interface."""
         try:
             if args.swarm_config:
+                if Swarm is None:
+                    print("[Error] Swarm functionality is not available. Please install the swarm package.")
+                    return
                 await self.run_swarm_interactive(args)
                 return
 

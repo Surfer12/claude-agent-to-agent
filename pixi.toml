@@ -41,21 +41,21 @@ java-package = { cmd = "mvn package" }
 java-jar = { cmd = "java -jar target/claude-agent-cli-1.0-SNAPSHOT-jar-with-dependencies.jar", depends-on = ["java-package"] }
 
 # Development tools
-setup = { cmd = ["python -m pip install -r requirements.txt", "echo '✅ Setup complete! Run: magic run cli'"], depends-on = ["check-env"] }
+setup = { cmd = "if [ ! -f .env ]; then echo 'ANTHROPIC_API_KEY=your-key-here' > .env && echo '✅ Created .env file - please add your API key'; fi && python -m pip install -r requirements.txt && echo '✅ Setup complete! Run: pixi run cli'", depends-on = ["check-env"] }
 java-setup = { cmd = ["mvn clean compile", "echo '✅ Java setup complete! Run: magic run java-cli'"] }
 
 # Enhanced Code Quality (Pixi-based, no virtual env needed)
 lint = { cmd = "flake8 enhanced_cli.py cli.py agents/ --max-line-length=88 --extend-ignore=E203,W503,E402" }
 format = { cmd = ["black enhanced_cli.py cli.py agents/", "isort enhanced_cli.py cli.py agents/"] }
-quality-check = { cmd = ["magic run lint", "magic run format", "magic run type-check"], description = "Run all code quality checks" }
+quality-check = { cmd = ["pixi run lint", "pixi run format", "pixi run type-check"], description = "Run all code quality checks" }
 type-check = { cmd = "mypy enhanced_cli.py cli.py agents/ --ignore-missing-imports" }
 security-scan = { cmd = "bandit -r . -f json -o bandit-report.json || echo 'Security scan completed'" }
 test-coverage = { cmd = "pytest --cov=agents --cov-report=html --cov-report=term" }
 
 # Git workflow helpers (no pre-commit hooks)
-pre-push-check = { cmd = ["magic run quality-check", "magic run test-coverage"], description = "Manual quality check before pushing" }
+pre-push-check = { cmd = ["pixi run quality-check", "pixi run test-coverage"], description = "Manual quality check before pushing" }
 git-status = { cmd = "git status && echo '✅ Ready for commit/push'" }
-git-push-safe = { cmd = ["magic run pre-push-check", "git add .", "git commit -m 'Auto-commit with quality checks'", "git push"], description = "Safe push with quality checks" }
+git-push-safe = { cmd = ["pixi run pre-push-check", "git add .", "git commit -m 'Auto-commit with quality checks'", "git push"], description = "Safe push with quality checks" }
 
 check-env = { cmd = "python -c 'import os; exit(0 if os.getenv(\"ANTHROPIC_API_KEY\") else 1)' || echo '⚠️  Set ANTHROPIC_API_KEY: export ANTHROPIC_API_KEY=\"your-key\"'" }
 
