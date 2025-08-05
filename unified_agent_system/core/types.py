@@ -10,6 +10,7 @@ class ProviderType(Enum):
     """Supported AI providers."""
     CLAUDE = "claude"
     OPENAI = "openai"
+    MOCK = "mock"
 
 
 class ComputerType(Enum):
@@ -37,10 +38,14 @@ class Tool:
     description: str
     parameters: Dict[str, Any]
     
-    @abstractmethod
     async def execute(self, **kwargs) -> "ToolResult":
         """Execute the tool with given parameters."""
-        pass
+        # Default implementation - subclasses should override
+        return ToolResult(
+            success=False,
+            content="Tool execution not implemented",
+            error="This tool does not have an execute method implemented"
+        )
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert tool to dictionary format for API calls."""

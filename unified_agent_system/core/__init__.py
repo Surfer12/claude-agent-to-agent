@@ -1,7 +1,7 @@
 """Core agent system abstractions and implementations."""
 
-from .agent import Agent, AgentConfig
+from .agent import Agent
 from .base import BaseAgent, BaseProvider
-from .types import Message, Tool, ToolResult
+from .types import AgentConfig, Message, Tool, ToolResult
 
 __all__ = ["Agent", "AgentConfig", "BaseAgent", "BaseProvider", "Message", "Tool", "ToolResult"] 

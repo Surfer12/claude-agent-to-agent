@@ -52,9 +52,9 @@ class Agent:
                            These override any conflicting parameters from config.
         """
         self.name = name
-        self.system = system
+        self.instructions = instructions
         self.verbose = verbose
-        self.tools = list(tools or [])
+        self.functions = list(functions or [])
         self.config = config or ModelConfig()
         self.mcp_servers = mcp_servers or []
         self.message_params = message_params or {}
@@ -179,20 +179,23 @@ class Agent:
             else:
                 return response
 
-    async def run_async(self, user_input: str) -> list[dict[str, Any]]:
-        """Run agent with MCP tools asynchronously."""
-        async with AsyncExitStack() as stack:
-            original_tools = list(self.tools)
-
-            try:
-                mcp_tools = await setup_mcp_connections(
-                    self.mcp_servers, stack
-                )
-                self.tools.extend(mcp_tools)
-                return await self._agent_loop(user_input)
-            finally:
-                self.tools = original_tools
+        async def run_async(self, user_input: str) -> list[dict[str, Any]]:
+        """Run agent with Swarm orchestration."""
+        swarm = Swarm(client=self.client)
+        messages = self.history.format_for_api()
+        messages.append({"role": "user", "content": user_input})
+        
+        response = swarm.run(
+            agent=self,
+            messages=messages,
+            model_override=self.config.model,
+        )
+        
+        # Update history with the full exchange
+        self.history.messages.extend(response.messages)
+        
+        return response.messages
 
     def run(self, user_input: str) -> list[dict[str, Any]]:
-        """Run agent synchronously"""
+        """Run agent synchronously with Swarm orchestration."""
         return asyncio.run(self.run_async(user_input))
