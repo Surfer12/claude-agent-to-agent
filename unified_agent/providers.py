@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional
 from anthropic import Anthropic
 from openai import AsyncOpenAI
 
-from .core import AgentConfig, ProviderInterface
+from .types import AgentConfig, ProviderInterface
 
 
 class ClaudeProvider(ProviderInterface):

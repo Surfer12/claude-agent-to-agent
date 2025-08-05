@@ -1,10 +1,6 @@
 ---
-alwaysApply: false
-
----
 description: Lorenz proof automated theorem proof with NODE-RK4 and Visual Grounding Graph Proof.
-globs: .md .txt .json .yaml .yml .xml
-
+alwaysApply: false
 ---
 The Lorenz equations are a system of three nonlinear ordinary differential equations (ODEs) originally derived by mathematician and meteorologist Edward Lorenz in 1963 as a simplified model for atmospheric convection. They are famous for demonstrating deterministic chaos, where small changes in initial conditions can lead to vastly different outcomes (the "butterfly effect"). The equations model the behavior of fluid flow in a layer heated from below, capturing phenomena like Rayleigh-Bénard convection.
 

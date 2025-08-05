@@ -1,6 +1,6 @@
-# Unified Agent System
+# Unified Agent System with Swarm Integration
 
-A provider-agnostic agent framework that supports both Claude and OpenAI backends, with unified CLI and computer use capabilities.
+A provider-agnostic agent framework that supports both Claude and OpenAI backends, with unified CLI, computer use, and multi-agent swarm capabilities.
 
 ## Features
 
@@ -67,6 +67,9 @@ python -m unified_agent.cli --provider claude --enable-code-execution --interact
 
 # Enable computer use
 python -m unified_agent.cli --provider openai --enable-computer-use --computer-type local-playwright
+
+# Swarm integration
+python -m unified_agent.cli --swarm-config swarm/examples/airline/configs/agents.py --initial-agent triage_agent
 ```
 
 ### Programmatic Usage

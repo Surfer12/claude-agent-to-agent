@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.anthropic.crypto.PaillierExampleTest$EncryptionDecryptionTests
 -------------------------------------------------------------------------------
-Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.164 s -- in com.anthropic.crypto.PaillierExampleTest$EncryptionDecryptionTests
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.168 s -- in com.anthropic.crypto.PaillierExampleTest$EncryptionDecryptionTests

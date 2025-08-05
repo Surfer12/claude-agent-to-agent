@@ -6,9 +6,11 @@ import argparse
 import asyncio
 import os
 import sys
+import importlib.util
 from typing import Optional
 
-from .core import UnifiedAgent, AgentConfig, ProviderType
+from .core import UnifiedAgent
+from .types import AgentConfig, ProviderType
 from swarm import Swarm, Agent
 
 
@@ -39,7 +41,7 @@ Examples:
   python -m unified_agent.cli --provider openai --enable-computer-use --start-url https://google.com
 
   # Swarm interactive mode
-  python -m unified_agent.cli --enable-swarm
+  python -m unified_agent.cli --swarm-config swarm/examples/airline/configs/agents.py --initial-agent triage_agent
             """
         )
         
@@ -102,10 +104,17 @@ Examples:
             action="store_true",
             help="Enable computer use capabilities"
         )
+        # Swarm settings
         parser.add_argument(
-            "--enable-swarm",
-            action="store_true",
-            help="Enable Swarm agent mode"
+            "--swarm-config",
+            type=str,
+            help="Path to the Swarm configuration file"
+        )
+        parser.add_argument(
+            "--initial-agent",
+            type=str,
+            default="agent_a",
+            help="Name of the initial agent in the swarm"
         )
         
         # Computer use settings
@@ -261,27 +270,29 @@ Examples:
             except Exception as e:
                 print(f"[Error] {str(e)}")
 
-    async def run_swarm_interactive(self):
+    async def run_swarm_interactive(self, args):
         """Run swarm in interactive mode."""
         print("\n[Swarm] Interactive mode started. Type 'exit' to quit.")
         
+        if not args.swarm_config:
+            print("[Error] No swarm configuration file provided. Use --swarm-config to specify the path.")
+            return
+
+        try:
+            # Dynamically load the swarm configuration
+            spec = importlib.util.spec_from_file_location("swarm_config", args.swarm_config)
+            swarm_config = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(swarm_config)
+            
+            # Get the initial agent
+            initial_agent = getattr(swarm_config, args.initial_agent)
+            
+        except (FileNotFoundError, AttributeError) as e:
+            print(f"[Error] Could not load swarm configuration: {e}")
+            return
+            
         client = Swarm()
         
-        # Define agents
-        agent_b = Agent(
-            name="Agent B",
-            instructions="Only speak in Haikus.",
-        )
-
-        def transfer_to_agent_b():
-            return agent_b
-
-        agent_a = Agent(
-            name="Agent A",
-            instructions="You are a helpful agent. You can transfer to Agent B.",
-            functions=[transfer_to_agent_b],
-        )
-
         messages = []
         while True:
             try:
@@ -296,7 +307,7 @@ Examples:
                 messages.append({"role": "user", "content": user_input})
 
                 response = client.run(
-                    agent=agent_a,
+                    agent=initial_agent,
                     messages=messages,
                 )
                 
@@ -317,8 +328,8 @@ Examples:
     async def run(self, args):
         """Run the CLI interface."""
         try:
-            if args.enable_swarm:
-                await self.run_swarm_interactive()
+            if args.swarm_config:
+                await self.run_swarm_interactive(args)
                 return
 
             # Create configuration

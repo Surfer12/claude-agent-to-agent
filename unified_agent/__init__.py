@@ -5,9 +5,10 @@ A provider-agnostic agent framework that supports both Claude and OpenAI backend
 with unified CLI and computer use capabilities.
 """
 
-from .core import UnifiedAgent, AgentConfig, ProviderType
+from .core import UnifiedAgent
+from .types import AgentConfig, ProviderType
 from .providers import ClaudeProvider, OpenAIProvider
-from .tools import ToolRegistry
+from .tool_registry import ToolRegistry
 from .cli import CLIInterface
 from .computer_use import ComputerUseInterface
 
