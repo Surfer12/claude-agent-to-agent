@@ -1,0 +1,89 @@
+version: "3.9"
+
+services:
+  ollama:
+    build:
+      context: .
+      dockerfile: Dockerfile.ollama
+      args:
+        OLLAMA_VER: "0.2.8"
+        OLLAMA_SHA256: "2bfa1e3d5a7c6b4e8f9a3e8c1b2d6f58f4e7c9b1124f6d7e5d3c9a2e1f7b4c2a"
+    image: local/ollama:0.2.8
+    container_name: ollama
+    restart: unless-stopped
+    
+    # Security settings
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    
+    # Resource limits for 48GB M4 Max
+    deploy:
+      resources:
+        limits:
+          memory: 32g
+          cpus: "8.0"
+        reservations:
+          memory: 16g
+          cpus: "4.0"
+    
+    # Networking - bind to localhost only
+    ports:
+      - "127.0.0.1:11434:11434"
+    
+    # Volume mounts for model storage
+    volumes:
+      # Mount external SSD for model storage (adjust path as needed)
+      - /Volumes/SSD1/ollama_models:/ollama:rw
+      # Optional: mount config file
+      - ./ollama-config.yaml:/etc/ollama/config.yaml:ro
+    
+    # Environment variables
+    environment:
+      - OLLAMA_HOME=/ollama
+      # Uncomment for offline mode after models are cached
+      # - OLLAMA_NO_NETWORK=1
+      # Optional: set host for external access
+      - OLLAMA_HOST=0.0.0.0:11434
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Optional: Python client service for testing
+  ollama-client:
+    image: python:3.11-slim
+    container_name: ollama-client
+    depends_on:
+      ollama:
+        condition: service_healthy
+    volumes:
+      - ./test_ollama_client.py:/app/test_client.py:ro
+    working_dir: /app
+    command: ["python", "test_client.py"]
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    networks:
+      - ollama-net
+    profiles:
+      - test
+
+networks:
+  ollama-net:
+    driver: bridge
+    internal: true  # Isolated network
