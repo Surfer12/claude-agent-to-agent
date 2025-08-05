@@ -1,4 +1,4 @@
-package com.anthropic.api.examples;
+package examples;
 
 import com.anthropic.api.AnthropicClientEnhanced;
 import com.anthropic.api.tools.AnthropicTools;

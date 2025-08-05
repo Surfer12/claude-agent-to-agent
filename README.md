@@ -285,7 +285,16 @@ def fibonacci(n):
 4. Add tests
 5. Submit a pull request
 
-## License
+## Testing
+
+To run the tests, use the following command:
+
+```bash
+PYTHONPATH=.:swarm pytest
+```
+
+This will run all the tests in the `tests` directory.
+
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 

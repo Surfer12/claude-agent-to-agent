@@ -88,6 +88,7 @@ RUN python -m pip install --upgrade pip==23.1.2 setuptools==58.0.4 wheel==0.40.0
 
 # only reinstall if requirements.txt changes
 COPY --chown=$USERNAME:$USERNAME computer_use_demo/requirements.txt $HOME/computer_use_demo/requirements.txt
+COPY --chown=$USERNAME:$USERNAME swarm/ $HOME/swarm/
 RUN python -m pip install -r $HOME/computer_use_demo/requirements.txt
 
 # setup desktop env & app

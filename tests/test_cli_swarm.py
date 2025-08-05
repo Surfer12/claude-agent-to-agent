@@ -18,7 +18,7 @@ async def test_run_swarm_interactive():
     with patch('builtins.input', side_effect=['hello', 'exit']), \
          patch('importlib.util.spec_from_file_location'), \
          patch('importlib.util.module_from_spec'), \
-         patch('swarm.Swarm') as mock_swarm, \
+         patch('unified_agent.cli.Swarm') as mock_swarm, \
          patch.dict(os.environ, {"OPENAI_API_KEY": "test_key"}):
 
         # Mock the swarm instance and its run method
