@@ -1,0 +1,166 @@
+# =============================================================================
+# Secure Ollama Docker Compose Configuration for macOS M4 Max (48GB)
+# =============================================================================
+# This compose file provides a hardened Ollama deployment with:
+# - CPU-only inference (Metal GPU not available in Docker on macOS)
+# - Security hardening with read-only filesystem
+# - Resource limits optimized for M4 Max
+# - Persistent model storage on external SSD
+# - Optional offline mode after model caching
+# =============================================================================
+
+version: "3.9"
+
+services:
+  ollama:
+    build:
+      context: .
+      dockerfile: Dockerfile.ollama
+      args:
+        OLLAMA_VER: "0.3.12"
+        OLLAMA_SHA256: "4b3b7c5a9e1c1f5c9c5c7a1e9b1e2c3d5e1c71c0e1d2e0d8e0e2be0e1c5df7c2b"
+    image: local/ollama:0.3.12
+    container_name: ollama-m4max
+    restart: unless-stopped
+    
+    # -----------------------------------------------------------------------------
+    # 🔒 Security Configuration
+    # -----------------------------------------------------------------------------
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+      - seccomp:unconfined  # Ollama may need some syscalls
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE  # For binding to port 11434
+    
+    # -----------------------------------------------------------------------------
+    # 📁 Volume Mounts - External SSD for models
+    # -----------------------------------------------------------------------------
+    volumes:
+      # Mount external SSD for model storage (create this directory first)
+      - /Volumes/SSD1/ollama_models:/ollama:rw
+      # Optional: Mount configuration file
+      - ./ollama-config.yaml:/ollama/config.yaml:ro
+    
+    # Writable tmpfs for temporary files
+    tmpfs:
+      - /tmp:size=2g,noexec,nosuid,nodev
+      - /var/tmp:size=1g,noexec,nosuid,nodev
+    
+    # -----------------------------------------------------------------------------
+    # 🌐 Network Configuration
+    # -----------------------------------------------------------------------------
+    ports:
+      # Bind to localhost only for security
+      - "127.0.0.1:11434:11434"
+    networks:
+      - ollama-net
+    
+    # -----------------------------------------------------------------------------
+    # 🔧 Environment Variables
+    # -----------------------------------------------------------------------------
+    environment:
+      # Core Ollama configuration
+      - OLLAMA_HOME=/ollama
+      - OLLAMA_HOST=0.0.0.0:11434
+      - OLLAMA_ORIGINS=*
+      - OLLAMA_MODELS=/ollama/models
+      - OLLAMA_LOGS=/ollama/logs
+      
+      # CPU-only configuration (no Metal in Docker)
+      - OLLAMA_NUM_PARALLEL=4
+      - OLLAMA_MAX_LOADED_MODELS=2
+      - OLLAMA_FLASH_ATTENTION=1
+      
+      # Memory optimization for M4 Max
+      - OLLAMA_HOST_MEMORY_FRACTION=0.7
+      
+      # Security: Uncomment to enable offline mode after caching models
+      # - OLLAMA_NO_NETWORK=1
+      
+      # Logging
+      - OLLAMA_DEBUG=0
+      - OLLAMA_VERBOSE=0
+    
+    # -----------------------------------------------------------------------------
+    # 💾 Resource Limits (Optimized for M4 Max 48GB)
+    # -----------------------------------------------------------------------------
+    deploy:
+      resources:
+        limits:
+          memory: 32g        # Leave 16GB for macOS and other apps
+          cpus: "8.0"        # Use 8 of the 14 CPU cores
+        reservations:
+          memory: 16g        # Minimum guaranteed memory
+          cpus: "4.0"        # Minimum guaranteed CPUs
+    
+    # Alternative resource limits for older Docker versions
+    mem_limit: 32g
+    mem_reservation: 16g
+    cpus: 8.0
+    
+    # -----------------------------------------------------------------------------
+    # 🏥 Health Check
+    # -----------------------------------------------------------------------------
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # -----------------------------------------------------------------------------
+    # 📊 Logging Configuration
+    # -----------------------------------------------------------------------------
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+        compress: "true"
+
+  # -----------------------------------------------------------------------------
+  # 🔧 Optional: Ollama Web UI (Uncomment to enable)
+  # -----------------------------------------------------------------------------
+  # ollama-webui:
+  #   image: ghcr.io/open-webui/open-webui:main
+  #   container_name: ollama-webui
+  #   restart: unless-stopped
+  #   ports:
+  #     - "127.0.0.1:3000:8080"
+  #   environment:
+  #     - OLLAMA_BASE_URL=http://ollama:11434
+  #   depends_on:
+  #     - ollama
+  #   networks:
+  #     - ollama-net
+  #   volumes:
+  #     - ollama-webui-data:/app/backend/data
+  #   security_opt:
+  #     - no-new-privileges:true
+  #   cap_drop:
+  #     - ALL
+  #   read_only: true
+  #   tmpfs:
+  #     - /tmp
+
+# =============================================================================
+# 🌐 Network Configuration
+# =============================================================================
+networks:
+  ollama-net:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-ollama
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# =============================================================================
+# 💾 Volume Configuration (Optional)
+# =============================================================================
+volumes:
+  ollama-webui-data:
+    driver: local

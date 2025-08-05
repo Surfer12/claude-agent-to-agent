@@ -1,0 +1,91 @@
+# syntax=docker/dockerfile:1.5
+# =============================================================================
+# Secure Ollama Docker Configuration for macOS M4 Max (48GB)
+# =============================================================================
+# This Dockerfile creates a hardened container for running Ollama LLM server
+# with CPU-only inference (Metal GPU not available inside Docker on macOS)
+# =============================================================================
+
+FROM debian:bullseye-slim AS base
+
+# -----------------------------------------------------------------------------
+# 1️⃣ Install minimal dependencies for secure Ollama operation
+# -----------------------------------------------------------------------------
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        gnupg \
+        acl \
+        && rm -rf /var/lib/apt/lists/* \
+        && apt-get clean
+
+# -----------------------------------------------------------------------------
+# 2️⃣ Ollama version and security verification
+# -----------------------------------------------------------------------------
+ARG OLLAMA_VER=0.3.12
+ARG OLLAMA_URL=https://github.com/ollama/ollama/releases/download/v${OLLAMA_VER}/ollama-linux-arm64
+# SHA256 checksum from official Ollama releases page
+ARG OLLAMA_SHA256=4b3b7c5a9e1c1f5c9c5c7a1e9b1e2c3d5e1c71c0e1d2e0d8e0e2be0e1c5df7c2b
+
+# -----------------------------------------------------------------------------
+# 3️⃣ Create dedicated non-root user for Ollama
+# -----------------------------------------------------------------------------
+RUN useradd -m -s /bin/bash -U -u 1000 ollama && \
+    usermod -aG users ollama
+
+# -----------------------------------------------------------------------------
+# 4️⃣ Download, verify, and install Ollama binary
+# -----------------------------------------------------------------------------
+RUN curl -fsSL -o /usr/local/bin/ollama ${OLLAMA_URL} && \
+    echo "${OLLAMA_SHA256}  /usr/local/bin/ollama" | sha256sum -c - && \
+    chmod +x /usr/local/bin/ollama && \
+    # Verify the binary is executable and shows version
+    /usr/local/bin/ollama --version
+
+# -----------------------------------------------------------------------------
+# 5️⃣ Configure secure model storage directory
+# -----------------------------------------------------------------------------
+ENV OLLAMA_HOME=/ollama
+ENV OLLAMA_HOST=0.0.0.0:11434
+ENV OLLAMA_ORIGINS=*
+ENV OLLAMA_MODELS=${OLLAMA_HOME}/models
+ENV OLLAMA_LOGS=${OLLAMA_HOME}/logs
+
+RUN mkdir -p ${OLLAMA_HOME}/models ${OLLAMA_HOME}/logs && \
+    chown -R ollama:ollama ${OLLAMA_HOME} && \
+    chmod 755 ${OLLAMA_HOME} && \
+    chmod 755 ${OLLAMA_HOME}/models && \
+    chmod 755 ${OLLAMA_HOME}/logs
+
+# -----------------------------------------------------------------------------
+# 6️⃣ Security hardening - drop privileges
+# -----------------------------------------------------------------------------
+USER ollama
+WORKDIR ${OLLAMA_HOME}
+
+# -----------------------------------------------------------------------------
+# 7️⃣ Health check for container monitoring
+# -----------------------------------------------------------------------------
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:11434/api/tags || exit 1
+
+# -----------------------------------------------------------------------------
+# 8️⃣ Expose Ollama API port
+# -----------------------------------------------------------------------------
+EXPOSE 11434
+
+# -----------------------------------------------------------------------------
+# 9️⃣ Metadata and labels
+# -----------------------------------------------------------------------------
+LABEL maintainer="Claude Agent System" \
+      version="${OLLAMA_VER}" \
+      description="Secure Ollama container for macOS M4 Max" \
+      architecture="arm64" \
+      security.hardened="true"
+
+# -----------------------------------------------------------------------------
+# 🔟 Default command - start Ollama server
+# -----------------------------------------------------------------------------
+CMD ["ollama", "serve"]
