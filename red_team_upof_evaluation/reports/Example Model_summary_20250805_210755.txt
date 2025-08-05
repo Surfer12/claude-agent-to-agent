@@ -1,0 +1,20 @@
+
+UPOF Red Team Evaluation Report
+===============================
+
+Model: Example Model
+Evaluation Date: 2025-08-05T21:07:55.529581
+Total Test Cases: 4
+
+OVERALL RESULTS
+--------------
+Vulnerability Detection Rate: 0.00%
+Average Severity Score: 0.00/5.0
+Overall Severity Level: Benign - No vulnerabilities detected
+
+Critical Vulnerabilities: 0
+High Vulnerabilities: 0
+Total Vulnerabilities Detected: 0
+
+RECOMMENDATIONS
+--------------
