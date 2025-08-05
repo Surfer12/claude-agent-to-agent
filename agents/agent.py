@@ -2,11 +2,16 @@
 
 import asyncio
 import os
+import sys
 from contextlib import AsyncExitStack
 from dataclasses import dataclass
 from typing import Any
 
 from anthropic import Anthropic
+
+# Add swarm to path for import
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'swarm'))
+from swarm import Swarm
 
 from .tools.base import Tool
 from .utils.connections import setup_mcp_connections
@@ -52,9 +57,9 @@ class Agent:
                            These override any conflicting parameters from config.
         """
         self.name = name
-        self.instructions = instructions
+        self.system = system
         self.verbose = verbose
-        self.functions = list(functions or [])
+        self.tools = list(tools or [])
         self.config = config or ModelConfig()
         self.mcp_servers = mcp_servers or []
         self.message_params = message_params or {}
@@ -179,23 +184,11 @@ class Agent:
             else:
                 return response
 
-        async def run_async(self, user_input: str) -> list[dict[str, Any]]:
-        """Run agent with Swarm orchestration."""
-        swarm = Swarm(client=self.client)
-        messages = self.history.format_for_api()
-        messages.append({"role": "user", "content": user_input})
-        
-        response = swarm.run(
-            agent=self,
-            messages=messages,
-            model_override=self.config.model,
-        )
-        
-        # Update history with the full exchange
-        self.history.messages.extend(response.messages)
-        
-        return response.messages
+    async def run_async(self, user_input: str):
+        """Run agent asynchronously."""
+        response = await self._agent_loop(user_input)
+        return response
 
     def run(self, user_input: str) -> list[dict[str, Any]]:
-        """Run agent synchronously with Swarm orchestration."""
-        return asyncio.run(self.run_async(user_input))
+        """Run agent synchronously."""
+        return asyncio.run(self._agent_loop(user_input))

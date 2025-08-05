@@ -6,61 +6,96 @@ platforms = ["osx-arm64"]
 version = "0.1.0"
 
 [tasks]
-# Main CLI commands - super intuitive!
-cli = { cmd = "python enhanced_cli.py" }
-chat = { cmd = "python enhanced_cli.py --tools think file_read file_write" }
-quick = { cmd = "python enhanced_cli.py --prompt", depends-on = ["check-env"] }
-demo = { cmd = "python enhanced_cli.py --prompt 'Hello! What tools do you have available?'" }
+# === QUICK START COMMANDS ===
+# Most common commands for immediate use
+cli = { cmd = "python enhanced_cli.py", description = "Interactive Python CLI" }
+chat = { cmd = "python enhanced_cli.py --tools think file_read file_write", description = "Chat with basic tools" }
+quick = { cmd = "python enhanced_cli.py --prompt", depends-on = ["check-env"], description = "Quick prompt" }
+demo = { cmd = "python enhanced_cli.py --prompt 'Hello! What tools do you have available?'", description = "Demo available tools" }
 
-# Advanced usage
-full = { cmd = "python enhanced_cli.py --tools all" }
-dev = { cmd = "python enhanced_cli.py --tools all --verbose" }
-simple = { cmd = "python enhanced_cli.py --tools think" }
+# === PYTHON CLI VARIANTS ===
+full = { cmd = "python enhanced_cli.py --tools all", description = "CLI with all tools" }
+dev = { cmd = "python enhanced_cli.py --tools all --verbose", description = "Development mode" }
+simple = { cmd = "python enhanced_cli.py --tools think", description = "Minimal CLI" }
+swarm = { cmd = "python properly_working_swarm.py", description = "Swarm agent system" }
 
-# Testing shortcuts
-test = { cmd = "python enhanced_cli.py --prompt 'What is 2+2?'" }
-test-files = { cmd = "python enhanced_cli.py --prompt 'List files in current directory' --tools file_read" }
+# === CONSCIOUSNESS FRAMEWORK COMMANDS ===
+# New commands for the consciousness framework features
+ninestep = { cmd = "python enhanced_cli.py --prompt '@ninestep Analyze this problem using the 9-step consciousness framework'", description = "9-step framework" }
+upof = { cmd = "python enhanced_cli.py --prompt 'Apply UPOF processing to analyze complex patterns'", description = "UPOF processing" }
+swift-swarm = { cmd = "python enhanced_cli.py --prompt 'Use Swift Swarm mathematical proof methodology'", description = "Swift Swarm proofs" }
 
-# CLI Testing - Comprehensive leaf node testing
-test-cli-leaf = { cmd = "pytest tests/test_cli_leaf_nodes.py -v", description = "Test CLI leaf node components" }
-test-cli-examples = { cmd = "pytest tests/test_cli_examples.py -v", description = "Test CLI example scripts" }
-test-cli-all = { cmd = "pytest tests/test_cli_*.py -v", description = "Run all CLI tests" }
-test-cli-coverage = { cmd = "pytest tests/test_cli_*.py --cov=unified_agent.cli --cov=quick_start --cov-report=html --cov-report=term", description = "CLI test coverage" }
+# === JAVA IMPLEMENTATION ===
+# Enhanced Java commands with better organization
+java-cli = { cmd = "mvn exec:java", depends-on = ["java-build"], description = "Java CLI" }
+java-chat = { cmd = "mvn exec:java -Dexec.args='--model claude-3-5-sonnet-20240620'", depends-on = ["java-build"], description = "Java CLI + model" }
+java-quick = { cmd = "mvn exec:java -Dexec.args='--prompt \"Hello from Java CLI!\"'", depends-on = ["java-build"], description = "Java quick test" }
+java-consciousness = { cmd = "mvn exec:java -Dexec.args='--consciousness-mode'", depends-on = ["java-build"], description = "Java consciousness" }
+java-upof = { cmd = "mvn exec:java -Dexec.args='--upof-test'", depends-on = ["java-build"], description = "Java UPOF test" }
 
-# CLI Integration Testing
-test-cli-integration = { cmd = "pytest tests/test_cli_integration.py -v", description = "Test CLI integration" }
-test-cli-smoke = { cmd = "python enhanced_cli.py --help && python cli.py --help && (python quick_start.py --help || echo 'Quick start tested')", description = "CLI smoke tests" }
+# Java build and packaging
+java-build = { cmd = "mvn clean compile", description = "Compile Java" }
+java-test = { cmd = "mvn test", description = "Java tests" }
+java-package = { cmd = "mvn package", description = "Package JAR" }
+java-jar = { cmd = "java -jar target/claude-agent-cli-1.0-SNAPSHOT-jar-with-dependencies.jar", depends-on = ["java-package"], description = "Run JAR" }
+java-verify = { cmd = "mvn verify", description = "Full verification" }
 
-# Java implementation - Enhanced!
-java-cli = { cmd = "mvn exec:java", depends-on = ["java-build"] }
-java-chat = { cmd = "mvn exec:java -Dexec.args='--model claude-3-5-sonnet-20240620'", depends-on = ["java-build"] }
-java-quick = { cmd = "mvn exec:java -Dexec.args='--prompt \"Hello from Java CLI!\"'", depends-on = ["java-build"] }
-java-build = { cmd = "mvn clean compile" }
-java-test = { cmd = "mvn test" }
-java-package = { cmd = "mvn package" }
-java-jar = { cmd = "java -jar target/claude-agent-cli-1.0-SNAPSHOT-jar-with-dependencies.jar", depends-on = ["java-package"] }
+# === TESTING SUITE ===
+# Quick testing shortcuts
+test = { cmd = "python enhanced_cli.py --prompt 'What is 2+2?'", description = "Basic test" }
+test-files = { cmd = "python enhanced_cli.py --prompt 'List files in current directory' --tools file_read", description = "File ops test" }
+test-math = { cmd = "python enhanced_cli.py --prompt 'Solve: integral of x^2 from 0 to 1' --tools think", description = "Math test" }
 
-# Development tools
-setup = { cmd = "if [ ! -f .env ]; then echo 'ANTHROPIC_API_KEY=your-key-here' > .env && echo '✅ Created .env file - please add your API key'; fi && python -m pip install -r requirements.txt && echo '✅ Setup complete! Run: pixi run cli'", depends-on = ["check-env"] }
-java-setup = { cmd = ["mvn clean compile", "echo '✅ Java setup complete! Run: magic run java-cli'"] }
+# CLI Testing - Comprehensive
+test-cli-leaf = { cmd = "pytest tests/test_cli_leaf_nodes.py -v", description = "CLI leaf nodes" }
+test-cli-examples = { cmd = "pytest tests/test_cli_examples.py -v", description = "CLI examples" }
+test-cli-all = { cmd = "pytest tests/test_cli_*.py -v", description = "All CLI tests" }
+test-cli-coverage = { cmd = "pytest tests/test_cli_*.py --cov=unified_agent.cli --cov=quick_start --cov-report=html --cov-report=term", description = "CLI coverage" }
+test-cli-integration = { cmd = "pytest tests/test_cli_integration.py -v", description = "CLI integration" }
+test-cli-smoke = { cmd = "python enhanced_cli.py --help && python cli.py --help && (python quick_start.py --help || echo 'Quick start tested')", description = "Smoke tests" }
 
-# Enhanced Code Quality (Pixi-based, no virtual env needed)
-lint = { cmd = "flake8 enhanced_cli.py cli.py agents/ --max-line-length=88 --extend-ignore=E203,W503,E402" }
-format = { cmd = ["black enhanced_cli.py cli.py agents/", "isort enhanced_cli.py cli.py agents/"] }
-quality-check = { cmd = ["pixi run lint", "pixi run format", "pixi run type-check"], description = "Run all code quality checks" }
-type-check = { cmd = "mypy enhanced_cli.py cli.py agents/ --ignore-missing-imports" }
-security-scan = { cmd = "bandit -r . -f json -o bandit-report.json || echo 'Security scan completed'" }
-test-coverage = { cmd = "pytest --cov=agents --cov-report=html --cov-report=term" }
+# Java testing
+test-java = { cmd = "mvn test", description = "Java tests" }
+test-java-consciousness = { cmd = "mvn test -Dtest=*Consciousness*", description = "Consciousness tests" }
+test-java-integration = { cmd = "mvn failsafe:integration-test", description = "Java integration" }
 
-# Git workflow helpers (no pre-commit hooks)
-pre-push-check = { cmd = ["pixi run quality-check", "pixi run test-coverage"], description = "Manual quality check before pushing" }
-git-status = { cmd = "git status && echo '✅ Ready for commit/push'" }
-git-push-safe = { cmd = ["pixi run pre-push-check", "git add .", "git commit -m 'Auto-commit with quality checks'", "git push"], description = "Safe push with quality checks" }
+# === SETUP AND INITIALIZATION ===
+setup = { cmd = "if [ ! -f .env ]; then echo 'ANTHROPIC_API_KEY=your-key-here' > .env && echo '✅ Created .env file - please add your API key'; fi && python -m pip install -r requirements.txt && echo '✅ Setup complete! Run: pixi run cli'", depends-on = ["check-env"], description = "Python setup" }
+java-setup = { cmd = ["mvn clean compile", "echo '✅ Java setup complete! Run: pixi run java-cli'"], description = "Java setup" }
+full-setup = { cmd = ["pixi run setup", "pixi run java-setup"], description = "Complete setup" }
 
-check-env = { cmd = "python -c 'import os; exit(0 if os.getenv(\"ANTHROPIC_API_KEY\") else 1)' || echo '⚠️  Set ANTHROPIC_API_KEY: export ANTHROPIC_API_KEY=\"your-key\"'" }
+# === DIAGNOSTICS AND TROUBLESHOOTING ===
+# Helpful commands for debugging and system status
+check-env = { cmd = "python -c 'import os; exit(0 if os.getenv(\"ANTHROPIC_API_KEY\") else 1)' || echo '⚠️  Set ANTHROPIC_API_KEY: export ANTHROPIC_API_KEY=\"your-key\"'", description = "Check environment" }
+check-python = { cmd = "python --version && python -c 'import anthropic; print(f\"Anthropic SDK: {anthropic.__version__}\")'", description = "Check Python" }
+check-java = { cmd = "java -version && mvn -version", description = "Check Java" }
+check-all = { cmd = ["pixi run check-env", "pixi run check-python", "pixi run check-java"], description = "System check" }
+diagnose = { cmd = "echo '=== System Diagnostics ===' && pixi run check-all && echo '=== Java Compilation ===' && mvn compile -q && echo '✅ All systems operational'", description = "Full diagnostic" }
 
-# Legacy support
-old-cli = { cmd = "python cli.py --interactive --tools think file_read file_write" }
+# === CODE QUALITY AND MAINTENANCE ===
+lint = { cmd = "flake8 enhanced_cli.py cli.py agents/ --max-line-length=88 --extend-ignore=E203,W503,E402", description = "Python linting" }
+format = { cmd = ["black enhanced_cli.py cli.py agents/", "isort enhanced_cli.py cli.py agents/"], description = "Format code" }
+type-check = { cmd = "mypy enhanced_cli.py cli.py agents/ --ignore-missing-imports", description = "Type checking" }
+java-format = { cmd = "mvn spotless:apply", description = "Format Java" }
+quality-check = { cmd = ["pixi run lint", "pixi run format", "pixi run type-check"], description = "Quality check" }
+security-scan = { cmd = "bandit -r . -f json -o bandit-report.json || echo 'Security scan completed'", description = "Security scan" }
+test-coverage = { cmd = "pytest --cov=agents --cov-report=html --cov-report=term", description = "Test coverage" }
+
+# === GIT WORKFLOW HELPERS ===
+git-status = { cmd = "git status && echo '✅ Ready for commit/push'", description = "Git status" }
+pre-push-check = { cmd = ["pixi run quality-check", "pixi run test-coverage"], description = "Pre-push check" }
+git-push-safe = { cmd = ["pixi run pre-push-check", "git add .", "git commit -m 'Auto-commit with quality checks'", "git push"], description = "Safe push" }
+clean-build = { cmd = ["git clean -fdx target/", "mvn clean", "echo '✅ Build artifacts cleaned'"], description = "Clean build" }
+
+# === LEGACY AND COMPATIBILITY ===
+old-cli = { cmd = "python cli.py --interactive --tools think file_read file_write", description = "Legacy CLI" }
+quick-start = { cmd = "python quick_start.py", description = "Quick start" }
+
+# === ADVANCED WORKFLOWS ===
+# Complete development workflows
+dev-setup = { cmd = ["pixi run full-setup", "pixi run diagnose", "pixi run test"], description = "Dev environment" }
+release-check = { cmd = ["pixi run quality-check", "pixi run test-java", "pixi run test-cli-all", "pixi run java-package"], description = "Release validation" }
+demo-all = { cmd = ["echo '=== Python Demo ===' && pixi run demo", "echo '=== Java Demo ===' && pixi run java-quick", "echo '=== Consciousness Framework Demo ===' && pixi run ninestep"], description = "All demos" }
 
 [dependencies]
 anthropic = ">=0.60.0,<0.61"
