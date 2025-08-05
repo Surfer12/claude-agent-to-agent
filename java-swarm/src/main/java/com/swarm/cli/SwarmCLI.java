@@ -106,6 +106,16 @@ public class SwarmCLI {
                 .argName("INSTRUCTIONS")
                 .desc("System instructions for the agent")
                 .build());
+                
+        options.addOption(Option.builder("s")
+                .longOpt("stream")
+                .desc("Enable streaming responses")
+                .build());
+                
+        options.addOption(Option.builder()
+                .longOpt("no-stream")
+                .desc("Disable streaming responses (default)")
+                .build());
         
         return options;
     }
