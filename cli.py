@@ -462,5 +462,10 @@ async def main_async():
         asyncio.run(handle_file_input_async(args, tools))
 
 
+def main():
+    """Main entry point for the CLI."""
+    asyncio.run(main_async())
+
+
 if __name__ == "__main__":
     main()

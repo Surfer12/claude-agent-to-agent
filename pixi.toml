@@ -28,8 +28,8 @@ test-cli-all = { cmd = "pytest tests/test_cli_*.py -v", description = "Run all C
 test-cli-coverage = { cmd = "pytest tests/test_cli_*.py --cov=unified_agent.cli --cov=quick_start --cov-report=html --cov-report=term", description = "CLI test coverage" }
 
 # CLI Integration Testing
-test-cli-integration = { cmd = ["python -m unified_agent.cli --help", "python quick_start.py --help || echo 'Quick start tested'"], description = "Test CLI integration" }
-test-cli-smoke = { cmd = ["python enhanced_cli.py --help", "python cli.py --help"], description = "CLI smoke tests" }
+test-cli-integration = { cmd = "pytest tests/test_cli_integration.py -v", description = "Test CLI integration" }
+test-cli-smoke = { cmd = "python enhanced_cli.py --help && python cli.py --help && (python quick_start.py --help || echo 'Quick start tested')", description = "CLI smoke tests" }
 
 # Java implementation - Enhanced!
 java-cli = { cmd = "mvn exec:java", depends-on = ["java-build"] }
@@ -86,3 +86,6 @@ pytest-asyncio = ">=0.23.0,<0.24"
 pytest-subprocess = ">=1.5.0,<2"
 pytest-timeout = ">=2.3.0,<3"
 pytest-xdist = ">=3.5.0,<4"
+
+# MCP (Model Context Protocol) support
+mcp = ">=1.0.0,<2"
