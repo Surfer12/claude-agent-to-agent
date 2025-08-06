@@ -6,3 +6,5 @@
 .magic
 key-deriv.md
 .env
+red_team_upof_evaluation/analysis/anthropic_access_blocking.md
+red_team_upof_evaluation/analysis/monopoly_implications.md
