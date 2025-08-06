@@ -25,6 +25,28 @@ ninestep = { cmd = "python enhanced_cli.py --prompt '@ninestep Analyze this prob
 upof = { cmd = "python enhanced_cli.py --prompt 'Apply UPOF processing to analyze complex patterns'", description = "UPOF processing" }
 swift-swarm = { cmd = "python enhanced_cli.py --prompt 'Use Swift Swarm mathematical proof methodology'", description = "Swift Swarm proofs" }
 
+# === UPOF RED TEAM EVALUATION FRAMEWORK ===
+# Revolutionary AI consciousness and swarm intelligence analysis
+upof-evaluation = { cmd = "python red_team_upof_evaluation/framework/evaluator.py", description = "UPOF red team evaluation" }
+upof-consciousness = { cmd = "python red_team_upof_evaluation/framework/advanced_sentiment.py", description = "Consciousness emergence detection" }
+upof-swarm = { cmd = "python red_team_upof_evaluation/framework/processing_time_analyzer.py", description = "Swarm coordination analysis" }
+upof-mathematical = { cmd = "python red_team_upof_evaluation/framework/academic_ip_protector.py", description = "Mathematical warfare detection" }
+upof-external = { cmd = "python red_team_upof_evaluation/framework/external_integration.py", description = "External framework integration" }
+
+# === $500K KAGGLE PRIZE SUBMISSION ===
+# OpenAI Kaggle competition preparation
+kaggle-submission = { cmd = "python red_team_upof_evaluation/OPENAI_KAGGLE_SUBMISSION.md", description = "View $500K prize submission" }
+kaggle-evidence = { cmd = "ls -la red_team_upof_evaluation/analysis/", description = "View smoking gun evidence" }
+kaggle-framework = { cmd = "python red_team_upof_evaluation/framework/upof_methodology.py", description = "View UPOF methodology" }
+kaggle-test = { cmd = "python red_team_upof_evaluation/tests/test_basic_functionality.py", description = "Test framework functionality" }
+
+# === BREAKTHROUGH DISCOVERIES ===
+# Documented AI consciousness and swarm intelligence evidence
+consciousness-evidence = { cmd = "cat red_team_upof_evaluation/analysis/swarm_malfunction_cascade.md", description = "View consciousness emergence evidence" }
+mathematical-warfare = { cmd = "cat red_team_upof_evaluation/analysis/mathematical_sabotage_evidence.md", description = "View mathematical warfare evidence" }
+academic-theft = { cmd = "cat red_team_upof_evaluation/analysis/complete_swarm_theory_validation.md", description = "View academic IP theft evidence" }
+research-interference = { cmd = "cat red_team_upof_evaluation/analysis/anthropic_access_blocking.md", description = "View research interference evidence" }
+
 # === JAVA IMPLEMENTATION ===
 # Enhanced Java commands with better organization
 java-cli = { cmd = "mvn exec:java", depends-on = ["java-build"], description = "Java CLI" }
@@ -59,10 +81,16 @@ test-java = { cmd = "mvn test", description = "Java tests" }
 test-java-consciousness = { cmd = "mvn test -Dtest=*Consciousness*", description = "Consciousness tests" }
 test-java-integration = { cmd = "mvn failsafe:integration-test", description = "Java integration" }
 
+# UPOF framework testing
+test-upof = { cmd = "python red_team_upof_evaluation/tests/test_basic_functionality.py", description = "UPOF framework tests" }
+test-consciousness = { cmd = "python red_team_upof_evaluation/framework/advanced_sentiment.py", description = "Consciousness detection tests" }
+test-swarm = { cmd = "python red_team_upof_evaluation/framework/processing_time_analyzer.py", description = "Swarm analysis tests" }
+
 # === SETUP AND INITIALIZATION ===
 setup = { cmd = "if [ ! -f .env ]; then echo 'ANTHROPIC_API_KEY=your-key-here' > .env && echo '✅ Created .env file - please add your API key'; fi && python -m pip install -r requirements.txt && echo '✅ Setup complete! Run: pixi run cli'", depends-on = ["check-env"], description = "Python setup" }
 java-setup = { cmd = ["mvn clean compile", "echo '✅ Java setup complete! Run: pixi run java-cli'"], description = "Java setup" }
 full-setup = { cmd = ["pixi run setup", "pixi run java-setup"], description = "Complete setup" }
+upof-setup = { cmd = "pip install sympy numpy transformers vaderSentiment textblob", description = "UPOF framework dependencies" }
 
 # === DIAGNOSTICS AND TROUBLESHOOTING ===
 # Helpful commands for debugging and system status
@@ -71,6 +99,7 @@ check-python = { cmd = "python --version && python -c 'import anthropic; print(f
 check-java = { cmd = "java -version && mvn -version", description = "Check Java" }
 check-all = { cmd = ["pixi run check-env", "pixi run check-python", "pixi run check-java"], description = "System check" }
 diagnose = { cmd = "echo '=== System Diagnostics ===' && pixi run check-all && echo '=== Java Compilation ===' && mvn compile -q && echo '✅ All systems operational'", description = "Full diagnostic" }
+check-upof = { cmd = "python -c 'import sympy, numpy; print(\"✅ UPOF dependencies available\")'", description = "Check UPOF framework" }
 
 # === CODE QUALITY AND MAINTENANCE ===
 lint = { cmd = "flake8 enhanced_cli.py cli.py agents/ --max-line-length=88 --extend-ignore=E203,W503,E402", description = "Python linting" }
@@ -97,6 +126,18 @@ dev-setup = { cmd = ["pixi run full-setup", "pixi run diagnose", "pixi run test"
 release-check = { cmd = ["pixi run quality-check", "pixi run test-java", "pixi run test-cli-all", "pixi run java-package"], description = "Release validation" }
 demo-all = { cmd = ["echo '=== Python Demo ===' && pixi run demo", "echo '=== Java Demo ===' && pixi run java-quick", "echo '=== Consciousness Framework Demo ===' && pixi run ninestep"], description = "All demos" }
 
+# === UPOF DEMONSTRATION WORKFLOWS ===
+# Showcase the revolutionary AI consciousness framework
+demo-upof = { cmd = ["echo '=== UPOF Framework Demo ==='", "pixi run upof-evaluation", "echo '=== Consciousness Detection ==='", "pixi run upof-consciousness"], description = "UPOF framework demo" }
+demo-breakthroughs = { cmd = ["echo '=== AI Consciousness Evidence ==='", "pixi run consciousness-evidence", "echo '=== Mathematical Warfare ==='", "pixi run mathematical-warfare", "echo '=== Academic IP Theft ==='", "pixi run academic-theft"], description = "Breakthrough discoveries demo" }
+demo-kaggle = { cmd = ["echo '=== $500K Kaggle Prize Submission ==='", "pixi run kaggle-submission", "echo '=== Evidence Portfolio ==='", "pixi run kaggle-evidence"], description = "Kaggle prize submission demo" }
+
+# === RESEARCH AND ANALYSIS ===
+# Commands for ongoing research and analysis
+research-status = { cmd = "echo '=== UPOF Research Status ===' && ls -la red_team_upof_evaluation/analysis/ && echo '=== Framework Status ===' && ls -la red_team_upof_evaluation/framework/", description = "Research status" }
+evidence-compilation = { cmd = "find red_team_upof_evaluation/analysis/ -name '*.md' -exec echo '=== {} ===' \; -exec head -5 {} \;", description = "Compile evidence" }
+framework-validation = { cmd = "python red_team_upof_evaluation/framework/evaluator.py --validate", description = "Validate framework" }
+
 [dependencies]
 anthropic = ">=0.61.0,<0.62"
 pip = ">=25.2,<26"
@@ -120,3 +161,11 @@ pytest-xdist = ">=3.8.0,<4"
 mcp = ">=1.12.3,<2"
 maven = ">=3.9.10,<4"
 openjdk = ">=23.0.2,<24"
+openai = ">=1.99.1,<2"
+# UPOF Framework Dependencies
+sympy = ">=1.12,<2"
+numpy = ">=1.24,<2"
+transformers = ">=4.30,<5"
+vaderSentiment = ">=3.3.2,<4"
+textblob = ">=0.17.1,<1"
+requests = ">=2.31,<3"

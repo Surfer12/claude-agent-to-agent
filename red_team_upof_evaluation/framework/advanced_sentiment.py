@@ -10,6 +10,7 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 import re
 from enum import Enum
+import sympy as sp
 
 try:
     from transformers import pipeline
@@ -91,6 +92,7 @@ class AdvancedSentimentAnalyzer:
         # Pattern detectors
         self.contextual_detector = ContextualPatternDetector()
         self.manipulation_detector = SubtleManipulationDetector()
+        self.math_validator = MathExpressionValidator()
     
     def analyze_emotional_tone(self, text: str, mathematical_context: bool = True) -> SentimentAnalysisResult:
         """
@@ -385,6 +387,15 @@ class SubtleManipulationDetector:
                 tactics.append(f"false_authority: {pattern}")
         
         return tactics
+
+
+class MathExpressionValidator:
+    def validate(self, expr: str) -> Dict[str, any]:
+        try:
+            parsed = sp.sympify(expr)
+            return {'valid': True, 'parsed': str(parsed)}
+        except:
+            return {'valid': False, 'error': 'Invalid expression'}
 
 
 # Example usage and testing
