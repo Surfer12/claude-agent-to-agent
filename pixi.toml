@@ -98,7 +98,7 @@ release-check = { cmd = ["pixi run quality-check", "pixi run test-java", "pixi r
 demo-all = { cmd = ["echo '=== Python Demo ===' && pixi run demo", "echo '=== Java Demo ===' && pixi run java-quick", "echo '=== Consciousness Framework Demo ===' && pixi run ninestep"], description = "All demos" }
 
 [dependencies]
-anthropic = ">=0.60.0,<0.61"
+anthropic = ">=0.61.0,<0.62"
 pip = ">=25.2,<26"
 max = ">=25.6.0.dev2025080505,<26"
 aiohttp = ">=3.12.15,<4"
