@@ -130,9 +130,8 @@ public class AnthropicClientLeafNodeTest {
             }, "Should handle empty tool choice");
 
             // Test with null
-            assertDoesNotThrow(() -> {
-                builder.toolChoice(null);
-            }, "Should handle null tool choice");
+            assertDoesNotThrow(() -> builder.toolChoice(null), 
+                "Should handle null tool choice");
         }
 
         @Test

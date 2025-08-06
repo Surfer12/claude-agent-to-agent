@@ -61,12 +61,12 @@ public final class AnthropicClient {
         }
 
         public Builder tools(Set<String> tools) {
-            this.tools = Set.copyOf(tools);
+            this.tools = Optional.ofNullable(tools).map(Set::copyOf).orElse(Set.of());
             return this;
         }
 
         public Builder toolChoice(Map<String, Object> toolChoice) {
-            this.toolChoice = Map.copyOf(toolChoice);
+            this.toolChoice = Optional.ofNullable(toolChoice).map(Map::copyOf).orElse(Map.of());
             return this;
         }
 
