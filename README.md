@@ -1,497 +1,279 @@
-# Unified Agent System with Swarm Integration
+# vLLM GPT-OSS-120B Setup
 
-A provider-agnostic agent framework that supports both Claude and OpenAI backends, with unified CLI, computer use, and multi-agent swarm capabilities.
+This repository contains scripts and configurations to run the GPT-OSS-120B model using vLLM.
 
-## 🎯 Pixi Integration Complete
+## Prerequisites
 
-### **📋 New Files Created**
-java-swarm/
-├── pixi.toml                      # Main Pixi configuration
-├── PIXI_USAGE.md                  # Complete Pixi usage guide
-├── scripts/
-│   ├── setup-env.sh              # Environment setup script
-│   └── validate-pixi.sh          # Pixi configuration validator
-└── examples/
-    └── custom-pixi-tasks.toml     # Custom task examples
+### Hardware Requirements
+- **GPU Memory**: At least 240GB of GPU memory for the full model
+- **Multiple GPUs**: Recommended for optimal performance
+- **RAM**: At least 512GB of system RAM
+- **Storage**: At least 500GB of free space for model weights
 
-
-### **🚀 Available Pixi Commands**
-
-#### **Build & Development**
-bash
-pixi run build              # Build the project
-pixi run compile            # Compile source only
-pixi run test              # Run unit tests
-pixi run clean             # Clean build artifacts
-pixi run rebuild           # Clean and rebuild
-pixi run dev               # Development mode
-
-
-#### **Interactive Chat**
-bash
-pixi run interactive              # Basic interactive mode
-pixi run interactive-debug        # Interactive with debug
-pixi run interactive-stream       # Interactive with streaming
-pixi run interactive-stream-debug # Interactive with streaming + debug
-
-
-#### **Single Messages**
-bash
-pixi run chat "Your message"           # Send single message
-pixi run chat-stream "Your message"    # Send with streaming
-pixi run chat-debug "Your message"     # Send with debug info
-
-
-#### **Specialized Agents**
-bash
-pixi run math-bot          # Mathematics expert
-pixi run code-bot          # Programming expert
-pixi run story-bot         # Creative storyteller (with streaming)
-
-
-#### **Model Selection**
-bash
-pixi run gpt4              # Use GPT-4o
-pixi run gpt4-mini         # Use GPT-4o-mini
-pixi run gpt35             # Use GPT-3.5-turbo
-
-
-#### **Examples & Demos**
-bash
-pixi run streaming-demo    # Demonstrate streaming
-pixi run calculator-demo   # Demonstrate function calling
-pixi run https-demo        # Demonstrate HTTPS configuration
-
-
-#### **Quick Start**
-bash
-pixi run quick-start       # Build and run interactively
-pixi run quick-stream      # Build and run with streaming
-
-
-### **🛠 Key Features**
-
-1. Automatic Dependency Management: Pixi handles Java 17+ and Maven installation
-2. Environment Isolation: Each project has its own isolated environment
-3. Cross-Platform: Works on macOS, Linux, and Windows
-4. Task Dependencies: Tasks automatically ensure prerequisites are met
-5. Multiple Environments: Support for dev, test, and production environments
-6. Custom Tasks: Easy to add custom agent configurations and workflows
-
-### **📖 Usage Examples**
-
-#### **Quick Start**
-bash
-# Install Pixi
-curl -fsSL https://pixi.sh/install.sh | bash
-
-# Setup project
-pixi install
-
-# Set API key
-export OPENAI_API_KEY="your-key-here"
-
-# Start chatting
-pixi run quick-start
-
-
-#### **Development Workflow**
-bash
-# Build and test
-pixi run rebuild
-
-# Start development mode
-pixi run dev
-
-# Test streaming
-pixi run interactive-stream
-
-# Run demos
-pixi run streaming-demo
-
-
-#### **Specialized Use Cases**
-bash
-# Math tutoring
-pixi run math-bot
-
-# Code assistance
-pixi run code-bot
-
-# Creative writing with streaming
-pixi run story-bot
-
-
-### **🔧 Advanced Features**
-
-#### **Multiple Environments**
-bash
-pixi run -e dev interactive     # Development environment
-pixi run -e test unit-tests     # Testing environment
-pixi run -e prod interactive    # Production environment
-
-
-#### **Custom Tasks**
-Users can easily add custom tasks to pixi.toml:
-toml
-[tasks]
-my-agent = "java -jar target/java-swarm-1.0.0.jar --interactive --agent-name MyBot --instructions 'Custom instructions'"
-
-
-#### **Task Dependencies**
-Tasks automatically handle dependencies:
-toml
-[tasks]
-chat = { cmd = "java -jar target/java-swarm-1.0.0.jar --input", depends_on = ["ensure-built"] }
-
-
-### **📚 Documentation**
-
-1. PIXI_USAGE.md: Complete reference for all Pixi commands
-2. Updated README.md: Includes Pixi as the recommended installation method
-3. Updated QUICKSTART.md: Pixi-first approach with fallback to manual
-4. Custom task examples: Shows how to extend functionality
-
-### **✅ Benefits of Pixi Integration**
-
-1. Simplified Setup: One command installs everything needed
-2. Consistent Environment: Same environment across all developers
-3. Easy Commands: Memorable, short commands instead of long Java CLI
-4. Cross-Platform: Works identically on all operating systems
-5. Dependency Management: Automatic handling of Java and Maven versions
-6. Task Organization: Logical grouping of related commands
-7. Environment Isolation: No conflicts with system-installed tools
-
-### **🎯 Example Workflows**
-
-#### **New User Experience**
-bash
-# Complete setup in 3 commands
-curl -fsSL https://pixi.sh/install.sh | bash
-pixi install
-pixi run quick-start
-
-
-#### **Daily Development**
-bash
-pixi run dev               # Start development
-pixi run test              # Run tests
-pixi run streaming-demo    # Test features
-
-
-#### **Production Usage**
-bash
-pixi run -e prod build     # Production build
-pixi run interactive       # Run application
-
-## Features
-
-- **Provider Agnostic**: Switch seamlessly between Claude and OpenAI
-- **Unified Interface**: Same agent composition works across providers
-- **CLI Interface**: Command-line interface for both providers
-- **Computer Use**: Browser automation and computer interaction
-- **Tool Integration**: Code execution, file operations, and more
-- **Modular Design**: Easy to extend with new tools and providers
-
-## Architecture
-
-```
-unified_agent/
-├── __init__.py          # Main package exports
-├── core.py              # Core agent framework
-├── providers.py         # Provider implementations (Claude/OpenAI)
-├── tools.py             # Tool registry and management
-├── cli.py               # Command-line interface
-├── computer_use.py      # Computer use interface
-└── tools/               # Individual tool implementations
-    ├── __init__.py
-    ├── base.py          # Base tool class
-    ├── computer_use.py  # Computer use tool
-    ├── code_execution.py # Code execution tool
-    └── file_tools.py    # File manipulation tools
-```
+### Software Requirements
+- Python 3.8+
+- CUDA 11.8+
+- Docker (optional, for containerized deployment)
 
 ## Installation
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd unified-agent-system
-```
+### Method 1: Python Installation (Recommended)
 
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+1. **Create a virtual environment**:
+   ```bash
+   python3 -m venv vllm_env
+   source vllm_env/bin/activate
+   ```
 
-3. Set up environment variables:
-```bash
-# For Claude
-export ANTHROPIC_API_KEY="your-claude-api-key"
+2. **Install PyTorch**:
+   ```bash
+   pip install torch torchvision torchaudio
+   ```
 
-# For OpenAI
-export OPENAI_API_KEY="your-openai-api-key"
-```
+3. **Install vLLM**:
+   ```bash
+   pip install vllm --no-deps
+   pip install transformers huggingface-hub fastapi uvicorn
+   ```
+
+4. **Install additional dependencies**:
+   ```bash
+   pip install msgspec aiohttp blake3 cachetools cloudpickle compressed-tensors depyf einops gguf importlib_metadata lark llguidance lm-format-enforcer mistral_common opencv-python-headless outlines partial-json-parser prometheus_client prometheus-fastapi-instrumentator protobuf psutil py-cpuinfo python-json-logger pyzmq ray scipy sentencepiece six tiktoken watchfiles xgrammar
+   ```
+
+### Method 2: Docker Installation
+
+1. **Install Docker and NVIDIA Docker runtime**:
+   ```bash
+   # Install Docker
+   curl -fsSL https://get.docker.com -o get-docker.sh
+   sudo sh get-docker.sh
+   
+   # Install NVIDIA Docker runtime
+   distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+   curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+   curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+   sudo apt-get update && sudo apt-get install -y nvidia-docker2
+   sudo systemctl restart docker
+   ```
 
 ## Usage
 
-### Basic CLI Usage
+### Method 1: Python Script
+
+1. **Activate the virtual environment**:
+   ```bash
+   source vllm_env/bin/activate
+   ```
+
+2. **Run the server**:
+   ```bash
+   python run_vllm_server.py
+   ```
+
+### Method 2: Docker
+
+1. **Make the script executable**:
+   ```bash
+   chmod +x run_docker.sh
+   ```
+
+2. **Run with Docker**:
+   ```bash
+   ./run_docker.sh
+   ```
+
+### Method 3: Direct vLLM Command
 
 ```bash
-# Basic interaction with Claude
-python -m unified_agent.cli --provider claude --input "Hello, how are you?"
+# Activate virtual environment
+source vllm_env/bin/activate
 
-# OpenAI with interactive mode
-python -m unified_agent.cli --provider openai --interactive
-
-# Enable code execution
-python -m unified_agent.cli --provider claude --enable-code-execution --interactive
-
-# Enable computer use
-python -m unified_agent.cli --provider openai --enable-computer-use --computer-type local-playwright
-
-# Swarm integration
-python -m unified_agent.cli --swarm-config swarm/examples/airline/configs/agents.py --initial-agent triage_agent
+# Run vLLM server directly
+vllm serve openai/gpt-oss-120b --host 0.0.0.0 --port 8000
 ```
 
-### Programmatic Usage
+## Testing the Server
 
-```python
-from unified_agent import UnifiedAgent, AgentConfig, ProviderType
+### Using the Test Script
 
-# Create configuration
-config = AgentConfig(
-    provider=ProviderType.CLAUDE,
-    model="claude-3-5-sonnet-20241022",
-    enable_tools=True,
-    enable_computer_use=True,
-    verbose=True
-)
+```bash
+# Activate virtual environment (if using Python method)
+source vllm_env/bin/activate
 
-# Create agent
-agent = UnifiedAgent(config)
-
-# Run agent
-response = agent.run("Hello, can you help me with a task?")
-print(response)
+# Run the test script
+python test_server.py
 ```
 
-### Computer Use Example
+### Using curl
+
+```bash
+curl -X POST "http://localhost:8000/v1/chat/completions" \
+    -H "Content-Type: application/json" \
+    --data '{
+        "model": "openai/gpt-oss-120b",
+        "messages": [
+            {
+                "role": "user",
+                "content": "What is the capital of France?"
+            }
+        ],
+        "max_tokens": 100
+    }'
+```
+
+### Using Python Requests
 
 ```python
-from unified_agent import ComputerUseAgent, AgentConfig, ProviderType
+import requests
+import json
 
-# Create computer use agent
-config = AgentConfig(
-    provider=ProviderType.OPENAI,
-    enable_computer_use=True,
-    computer_type="local-playwright",
-    start_url="https://google.com"
-)
+url = "http://localhost:8000/v1/chat/completions"
+headers = {"Content-Type": "application/json"}
+data = {
+    "model": "openai/gpt-oss-120b",
+    "messages": [
+        {
+            "role": "user",
+            "content": "What is the capital of France?"
+        }
+    ],
+    "max_tokens": 100
+}
 
-agent = ComputerUseAgent(config)
-
-# Run interactive computer use
-await agent.run_interactive()
+response = requests.post(url, headers=headers, json=data)
+result = response.json()
+print(result['choices'][0]['message']['content'])
 ```
 
 ## Configuration Options
 
-### Agent Configuration
+### GPU Configuration
 
-- `provider`: AI provider (CLAUDE or OPENAI)
-- `model`: Model name (provider-specific defaults)
-- `api_key`: API key (from environment if not provided)
-- `max_tokens`: Maximum response tokens
-- `temperature`: Response randomness (0.0-1.0)
-- `system_prompt`: System prompt for the agent
-- `verbose`: Enable detailed logging
-
-### Tool Configuration
-
-- `enable_tools`: Enable basic tools
-- `enable_code_execution`: Enable code execution tools
-- `enable_computer_use`: Enable computer use capabilities
-
-### Computer Use Configuration
-
-- `computer_type`: Computer environment type
-  - `local-playwright`: Local Playwright browser
-  - `browserbase`: Browserbase cloud browser
-- `start_url`: Starting URL for browser sessions
-- `show_images`: Show screenshots during execution
-- `debug`: Enable debug mode
-
-## Supported Models
-
-### Claude Models
-- `claude-3-5-sonnet-20241022`
-- `claude-3-opus-20240229`
-- `claude-3-sonnet-20240229`
-- `claude-3-haiku-20240307`
-
-### OpenAI Models
-- `gpt-4o`
-- `gpt-4o-mini`
-- `gpt-4-turbo`
-- `gpt-3.5-turbo`
-
-## Tools
-
-### Built-in Tools
-
-1. **Code Execution**: Execute Python code in sandboxed environment
-2. **File Operations**: Read, write, list, and delete files
-3. **Computer Use**: Browser automation and computer interaction
-
-### Computer Use Actions
-
-- `navigate`: Navigate to a URL
-- `click`: Click on page elements
-- `type`: Type text into form fields
-- `screenshot`: Take page screenshots
-- `scroll`: Scroll the page
-- `wait`: Wait for specified time
-
-## Development
-
-### Adding New Tools
-
-1. Create a new tool class inheriting from `BaseTool`:
-```python
-from unified_agent.tools.base import BaseTool
-
-class MyTool(BaseTool):
-    def __init__(self):
-        super().__init__("my_tool", "Description of my tool")
-    
-    async def execute(self, input_data):
-        # Tool implementation
-        return "Tool result"
-    
-    def get_input_schema(self):
-        return {
-            "type": "object",
-            "properties": {
-                "param": {"type": "string"}
-            },
-            "required": ["param"]
-        }
-```
-
-2. Register the tool in the registry:
-```python
-from unified_agent.tools import ToolRegistry
-
-registry = ToolRegistry()
-registry.register_tool(MyTool())
-```
-
-### Adding New Providers
-
-1. Create a provider class implementing `ProviderInterface`:
-```python
-from unified_agent.core import ProviderInterface
-
-class MyProvider(ProviderInterface):
-    async def create_message(self, messages, tools=None, **kwargs):
-        # Provider implementation
-        pass
-    
-    def get_tool_schema(self, tools):
-        # Convert tools to provider format
-        pass
-```
-
-2. Add the provider to the core agent:
-```python
-# In core.py, add to _create_provider method
-elif self.config.provider == ProviderType.MY_PROVIDER:
-    return MyProvider(self.config)
-```
-
-## Examples
-
-### Web Scraping with Computer Use
-
-```python
-from unified_agent import ComputerUseAgent, AgentConfig, ProviderType
-
-config = AgentConfig(
-    provider=ProviderType.OPENAI,
-    enable_computer_use=True,
-    computer_type="local-playwright",
-    start_url="https://example.com"
-)
-
-agent = ComputerUseAgent(config)
-
-# The agent can now navigate, click, and extract information
-response = await agent.run("Go to the homepage and find the main navigation menu")
-```
-
-### Code Analysis with Code Execution
-
-```python
-from unified_agent import UnifiedAgent, AgentConfig, ProviderType
-
-config = AgentConfig(
-    provider=ProviderType.CLAUDE,
-    enable_code_execution=True,
-    system_prompt="You are a Python code analyzer. Analyze and improve the provided code."
-)
-
-agent = UnifiedAgent(config)
-
-response = agent.run("""
-Analyze this code:
-def fibonacci(n):
-    if n <= 1:
-        return n
-    return fibonacci(n-1) + fibonacci(n-2)
-""")
-```
-
-## Environment Variables
-
-- `ANTHROPIC_API_KEY`: Claude API key
-- `OPENAI_API_KEY`: OpenAI API key
-- `DEBUG`: Enable debug mode
-- `VERBOSE`: Enable verbose logging
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
-
-## Testing
-
-To run the tests, use the following command:
+For multi-GPU setups, adjust the `--tensor-parallel-size` parameter:
 
 ```bash
-PYTHONPATH=.:swarm pytest
+# For 4 GPUs
+vllm serve openai/gpt-oss-120b --tensor-parallel-size 4
+
+# For 8 GPUs
+vllm serve openai/gpt-oss-120b --tensor-parallel-size 8
 ```
 
-This will run all the tests in the `tests` directory.
+### Memory Optimization
 
+For limited GPU memory, you can use quantization:
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+```bash
+# Use 4-bit quantization
+vllm serve openai/gpt-oss-120b --quantization awq
+
+# Use 8-bit quantization
+vllm serve openai/gpt-oss-120b --quantization gptq
+```
+
+### Hugging Face Token
+
+If the model requires authentication, set your Hugging Face token:
+
+```bash
+export HUGGING_FACE_HUB_TOKEN="your_token_here"
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Out of Memory (OOM) Error**:
+   - Reduce `--tensor-parallel-size`
+   - Use quantization
+   - Increase GPU memory
+   - Use CPU offloading
+
+2. **Model Download Issues**:
+   - Check internet connection
+   - Verify Hugging Face token
+   - Clear cache: `rm -rf ~/.cache/huggingface`
+
+3. **CUDA Errors**:
+   - Verify CUDA installation
+   - Check GPU drivers
+   - Ensure NVIDIA Docker runtime is installed
+
+4. **Port Already in Use**:
+   - Change port: `--port 8001`
+   - Kill existing process: `lsof -ti:8000 | xargs kill -9`
+
+### Performance Optimization
+
+1. **Multi-GPU Setup**:
+   ```bash
+   vllm serve openai/gpt-oss-120b --tensor-parallel-size 4 --gpu-memory-utilization 0.9
+   ```
+
+2. **Memory Optimization**:
+   ```bash
+   vllm serve openai/gpt-oss-120b --max-model-len 4096 --gpu-memory-utilization 0.8
+   ```
+
+3. **Batch Processing**:
+   ```bash
+   vllm serve openai/gpt-oss-120b --max-num-batched-tokens 4096
+   ```
+
+## API Endpoints
+
+The server provides OpenAI-compatible API endpoints:
+
+- `POST /v1/chat/completions` - Chat completions
+- `POST /v1/completions` - Text completions
+- `GET /health` - Health check
+- `GET /models` - List available models
+
+## Monitoring
+
+### Logs
+- Check server logs for errors and performance metrics
+- Monitor GPU memory usage: `nvidia-smi`
+- Monitor system resources: `htop`
+
+### Metrics
+The server exposes Prometheus metrics at `/metrics` for monitoring.
+
+## Security Considerations
+
+1. **Network Security**:
+   - Use firewall rules
+   - Restrict access to trusted IPs
+   - Use HTTPS in production
+
+2. **Resource Limits**:
+   - Set memory limits
+   - Monitor usage
+   - Implement rate limiting
+
+3. **Authentication**:
+   - Implement API key authentication
+   - Use reverse proxy with auth
+
+## Production Deployment
+
+For production deployment, consider:
+
+1. **Load Balancing**: Use multiple server instances
+2. **Monitoring**: Implement comprehensive monitoring
+3. **Backup**: Regular model and configuration backups
+4. **Updates**: Plan for model and vLLM updates
+5. **Scaling**: Auto-scaling based on demand
+
+## License
+
+This project is licensed under the MIT License. The GPT-OSS-120B model has its own license - please check the model's license on Hugging Face.
 
 ## Support
 
-For support and questions:
-- Open an issue on GitHub
-- Check the documentation
-- Review the examples
-
-## Roadmap
-
-- [ ] Integration with actual computer use implementations
-- [ ] Additional provider support (Google, Azure, etc.)
-- [ ] Web UI interface
-- [ ] Plugin system for custom tools
-- [ ] Multi-agent coordination
-- [ ] Advanced computer use capabilities
+For issues and questions:
+1. Check the vLLM documentation
+2. Review the troubleshooting section
+3. Check GPU memory and system resources
+4. Verify all dependencies are installed correctly

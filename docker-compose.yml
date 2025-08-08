@@ -1,29 +1,25 @@
-version: "3.9"
+version: '3.8'
 
 services:
-  claude-agent:
-    build: .
-    container_name: claude-agent
-    volumes:
-      - ./.env:/app/.env:ro
+  vllm-server:
+    image: vllm/vllm-openai:latest
+    container_name: vllm-gpt-oss-120b
+    ports:
+      - "8000:8000"
     environment:
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-    # Security settings
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
-    read_only: true
-    tmpfs:
-      - /tmp
-    # Resource limits
-    mem_limit: 1g
-    mem_reservation: 512m
-    cpus: 1.0
-    # Networking (isolated)
-    networks:
-      - claude-net
-
-networks:
-  claude-net:
-    driver: bridge
+      - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN:-}
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    command: >
+      --model openai/gpt-oss-120b
+      --host 0.0.0.0
+      --port 8000
+      --tensor-parallel-size 1
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
