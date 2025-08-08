@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  ollama:
+    build:
+      context: .
+      dockerfile: Dockerfile.ollama
+    image: local/ollama:0.2.8
+    container_name: ollama
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      # Mount your model storage directory here
+      # Replace /path/to/your/ollama_models with your actual path
+      - ./ollama_models:/ollama:rw
+    environment:
+      - OLLAMA_NO_NETWORK=0
+      - OLLAMA_MODELS=/ollama
+      - OLLAMA_HOST=0.0.0.0:11434
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 32g
+          cpus: '8'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
