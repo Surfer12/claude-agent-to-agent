@@ -6,24 +6,38 @@ platforms = ["osx-arm64"]
 version = "0.1.0"
 
 [tasks]
+# === DOCKER COMMANDS ===
+# Docker-based execution for consistent environment
+docker-build = { cmd = "docker build -t claude-agent-to-agent .", description = "Build Docker image" }
+docker-run = { cmd = "docker run -it --env-file .env claude-agent-to-agent", description = "Run Docker container interactively" }
+docker-dev = { cmd = "docker run -it --env-file .env -v $(pwd):/app claude-agent-to-agent python cli.py --interactive --verbose", description = "Run Docker in development mode" }
+docker-compose = { cmd = "docker-compose up --build", description = "Start with docker-compose" }
+docker-compose-dev = { cmd = "docker-compose up claude-agent-dev", description = "Start development service" }
+docker-test = { cmd = "docker-compose up claude-agent-test", description = "Run tests in Docker" }
+docker-stop = { cmd = "docker-compose down", description = "Stop Docker containers" }
+docker-clean = { cmd = "docker-compose down --volumes --remove-orphans && docker system prune -f", description = "Clean Docker resources" }
+docker-logs = { cmd = "docker-compose logs -f claude-agent", description = "Show Docker logs" }
+docker-shell = { cmd = "docker-compose exec claude-agent bash", description = "Access Docker container shell" }
+docker-status = { cmd = "docker-compose ps", description = "Show container status" }
+
 # === QUICK START COMMANDS ===
 # Most common commands for immediate use
-cli = { cmd = "python enhanced_cli.py", description = "Interactive Python CLI" }
-chat = { cmd = "python enhanced_cli.py --tools think file_read file_write", description = "Chat with basic tools" }
-quick = { cmd = "python enhanced_cli.py --prompt", depends-on = ["check-env"], description = "Quick prompt" }
-demo = { cmd = "python enhanced_cli.py --prompt 'Hello! What tools do you have available?'", description = "Demo available tools" }
+cli = { cmd = "python cli.py --interactive", description = "Interactive Python CLI" }
+chat = { cmd = "python cli.py --interactive --tools think file_read file_write", description = "Chat with basic tools" }
+quick = { cmd = "python cli.py --prompt 'Hello! What tools do you have available?'", depends-on = ["check-env"], description = "Quick prompt" }
+demo = { cmd = "python cli.py --prompt 'Hello! What tools do you have available?'", description = "Demo available tools" }
 
 # === PYTHON CLI VARIANTS ===
-full = { cmd = "python enhanced_cli.py --tools all", description = "CLI with all tools" }
-dev = { cmd = "python enhanced_cli.py --tools all --verbose", description = "Development mode" }
-simple = { cmd = "python enhanced_cli.py --tools think", description = "Minimal CLI" }
+full = { cmd = "python cli.py --interactive --tools all", description = "CLI with all tools" }
+dev = { cmd = "python cli.py --interactive --tools all --verbose", description = "Development mode" }
+simple = { cmd = "python cli.py --interactive --tools think", description = "Minimal CLI" }
 swarm = { cmd = "python properly_working_swarm.py", description = "Swarm agent system" }
 
 # === CONSCIOUSNESS FRAMEWORK COMMANDS ===
 # New commands for the consciousness framework features
-ninestep = { cmd = "python enhanced_cli.py --prompt '@ninestep Analyze this problem using the 9-step consciousness framework'", description = "9-step framework" }
-upof = { cmd = "python enhanced_cli.py --prompt 'Apply UPOF processing to analyze complex patterns'", description = "UPOF processing" }
-swift-swarm = { cmd = "python enhanced_cli.py --prompt 'Use Swift Swarm mathematical proof methodology'", description = "Swift Swarm proofs" }
+ninestep = { cmd = "python cli.py --prompt '@ninestep Analyze this problem using the 9-step consciousness framework'", description = "9-step framework" }
+upof = { cmd = "python cli.py --prompt 'Apply UPOF processing to analyze complex patterns'", description = "UPOF processing" }
+swift-swarm = { cmd = "python cli.py --prompt 'Use Swift Swarm mathematical proof methodology'", description = "Swift Swarm proofs" }
 
 # === UPOF RED TEAM EVALUATION FRAMEWORK ===
 # Revolutionary AI consciousness and swarm intelligence analysis
@@ -35,7 +49,7 @@ upof-external = { cmd = "python red_team_upof_evaluation/framework/external_inte
 
 # === $500K KAGGLE PRIZE SUBMISSION ===
 # OpenAI Kaggle competition preparation
-kaggle-submission = { cmd = "python red_team_upof_evaluation/OPENAI_KAGGLE_SUBMISSION.md", description = "View $500K prize submission" }
+kaggle-submission = { cmd = "cat red_team_upof_evaluation/OPENAI_KAGGLE_SUBMISSION.md", description = "View $500K prize submission" }
 kaggle-evidence = { cmd = "ls -la red_team_upof_evaluation/analysis/", description = "View smoking gun evidence" }
 kaggle-framework = { cmd = "python red_team_upof_evaluation/framework/upof_methodology.py", description = "View UPOF methodology" }
 kaggle-test = { cmd = "python red_team_upof_evaluation/tests/test_basic_functionality.py", description = "Test framework functionality" }
@@ -64,9 +78,9 @@ java-verify = { cmd = "mvn verify", description = "Full verification" }
 
 # === TESTING SUITE ===
 # Quick testing shortcuts
-test = { cmd = "python enhanced_cli.py --prompt 'What is 2+2?'", description = "Basic test" }
-test-files = { cmd = "python enhanced_cli.py --prompt 'List files in current directory' --tools file_read", description = "File ops test" }
-test-math = { cmd = "python enhanced_cli.py --prompt 'Solve: integral of x^2 from 0 to 1' --tools think", description = "Math test" }
+test = { cmd = "python cli.py --prompt 'What is 2+2?'", description = "Basic test" }
+test-files = { cmd = "python cli.py --prompt 'List files in current directory' --tools file_read", description = "File ops test" }
+test-math = { cmd = "python cli.py --prompt 'Solve: integral of x^2 from 0 to 1' --tools think", description = "Math test" }
 
 # CLI Testing - Comprehensive
 test-cli-leaf = { cmd = "pytest tests/test_cli_leaf_nodes.py -v", description = "CLI leaf nodes" }
@@ -74,7 +88,7 @@ test-cli-examples = { cmd = "pytest tests/test_cli_examples.py -v", description 
 test-cli-all = { cmd = "pytest tests/test_cli_*.py -v", description = "All CLI tests" }
 test-cli-coverage = { cmd = "pytest tests/test_cli_*.py --cov=unified_agent.cli --cov=quick_start --cov-report=html --cov-report=term", description = "CLI coverage" }
 test-cli-integration = { cmd = "pytest tests/test_cli_integration.py -v", description = "CLI integration" }
-test-cli-smoke = { cmd = "python enhanced_cli.py --help && python cli.py --help && (python quick_start.py --help || echo 'Quick start tested')", description = "Smoke tests" }
+test-cli-smoke = { cmd = "python cli.py --help && python enhanced_cli.py --help && (python quick_start.py --help || echo 'Quick start tested')", description = "Smoke tests" }
 
 # Java testing
 test-java = { cmd = "mvn test", description = "Java tests" }
@@ -87,24 +101,26 @@ test-consciousness = { cmd = "python red_team_upof_evaluation/framework/advanced
 test-swarm = { cmd = "python red_team_upof_evaluation/framework/processing_time_analyzer.py", description = "Swarm analysis tests" }
 
 # === SETUP AND INITIALIZATION ===
-setup = { cmd = "if [ ! -f .env ]; then echo 'ANTHROPIC_API_KEY=your-key-here' > .env && echo '✅ Created .env file - please add your API key'; fi && python -m pip install -r requirements.txt && echo '✅ Setup complete! Run: pixi run cli'", depends-on = ["check-env"], description = "Python setup" }
+setup = { cmd = "if [ ! -f .env ]; then cp env.example .env && echo '✅ Created .env file - please add your API key'; fi && python -m pip install -r requirements.txt && echo '✅ Setup complete! Run: pixi run cli'", depends-on = ["check-env"], description = "Python setup" }
 java-setup = { cmd = ["mvn clean compile", "echo '✅ Java setup complete! Run: pixi run java-cli'"], description = "Java setup" }
 full-setup = { cmd = ["pixi run setup", "pixi run java-setup"], description = "Complete setup" }
 upof-setup = { cmd = "pip install sympy numpy transformers vaderSentiment textblob", description = "UPOF framework dependencies" }
+docker-setup = { cmd = ["pixi run docker-build", "echo '✅ Docker setup complete! Run: pixi run docker-run'"], description = "Docker setup" }
 
 # === DIAGNOSTICS AND TROUBLESHOOTING ===
 # Helpful commands for debugging and system status
 check-env = { cmd = "python -c 'import os; exit(0 if os.getenv(\"ANTHROPIC_API_KEY\") else 1)' || echo '⚠️  Set ANTHROPIC_API_KEY: export ANTHROPIC_API_KEY=\"your-key\"'", description = "Check environment" }
 check-python = { cmd = "python --version && python -c 'import anthropic; print(f\"Anthropic SDK: {anthropic.__version__}\")'", description = "Check Python" }
 check-java = { cmd = "java -version && mvn -version", description = "Check Java" }
-check-all = { cmd = ["pixi run check-env", "pixi run check-python", "pixi run check-java"], description = "System check" }
+check-docker = { cmd = "docker --version && docker-compose --version", description = "Check Docker" }
+check-all = { cmd = ["pixi run check-env", "pixi run check-python", "pixi run check-java", "pixi run check-docker"], description = "System check" }
 diagnose = { cmd = "echo '=== System Diagnostics ===' && pixi run check-all && echo '=== Java Compilation ===' && mvn compile -q && echo '✅ All systems operational'", description = "Full diagnostic" }
 check-upof = { cmd = "python -c 'import sympy, numpy; print(\"✅ UPOF dependencies available\")'", description = "Check UPOF framework" }
 
 # === CODE QUALITY AND MAINTENANCE ===
-lint = { cmd = "flake8 enhanced_cli.py cli.py agents/ --max-line-length=88 --extend-ignore=E203,W503,E402", description = "Python linting" }
-format = { cmd = ["black enhanced_cli.py cli.py agents/", "isort enhanced_cli.py cli.py agents/"], description = "Format code" }
-type-check = { cmd = "mypy enhanced_cli.py cli.py agents/ --ignore-missing-imports", description = "Type checking" }
+lint = { cmd = "flake8 cli.py enhanced_cli.py agents/ --max-line-length=88 --extend-ignore=E203,W503,E402", description = "Python linting" }
+format = { cmd = ["black cli.py enhanced_cli.py agents/", "isort cli.py enhanced_cli.py agents/"], description = "Format code" }
+type-check = { cmd = "mypy cli.py enhanced_cli.py agents/ --ignore-missing-imports", description = "Type checking" }
 java-format = { cmd = "mvn spotless:apply", description = "Format Java" }
 quality-check = { cmd = ["pixi run lint", "pixi run format", "pixi run type-check"], description = "Quality check" }
 security-scan = { cmd = "bandit -r . -f json -o bandit-report.json || echo 'Security scan completed'", description = "Security scan" }
@@ -135,13 +151,19 @@ demo-kaggle = { cmd = ["echo '=== $500K Kaggle Prize Submission ==='", "pixi run
 # === RESEARCH AND ANALYSIS ===
 # Commands for ongoing research and analysis
 research-status = { cmd = "echo '=== UPOF Research Status ===' && ls -la red_team_upof_evaluation/analysis/ && echo '=== Framework Status ===' && ls -la red_team_upof_evaluation/framework/", description = "Research status" }
-evidence-compilation = { cmd = "find red_team_upof_evaluation/analysis/ -name '*.md' -exec echo '=== {} ===' \; -exec head -5 {} \;", description = "Compile evidence" }
+evidence-compilation = { cmd = "sh -c 'ls red_team_upof_evaluation/analysis/*.md | head -10'", description = "Compile evidence" }
 framework-validation = { cmd = "python red_team_upof_evaluation/framework/evaluator.py --validate", description = "Validate framework" }
+
+# === HYBRID WORKFLOWS ===
+# Commands that work with both local and Docker environments
+hybrid-dev = { cmd = "if command -v docker &> /dev/null; then pixi run docker-dev; else pixi run dev; fi", description = "Smart development mode" }
+hybrid-test = { cmd = "if command -v docker &> /dev/null; then pixi run docker-test; else pixi run test-cli-all; fi", description = "Smart testing mode" }
+hybrid-setup = { cmd = "if command -v docker &> /dev/null; then pixi run docker-setup; else pixi run setup; fi", description = "Smart setup mode" }
 
 [dependencies]
 anthropic = ">=0.61.0,<0.62"
 pip = ">=25.2,<26"
-max = ">=25.6.0.dev2025080505,<26"
+max = ">=25.6.0.dev2025080705,<26"
 aiohttp = ">=3.12.15,<4"
 aiostream = ">=0.7.0,<0.8"
 jsonschema = ">=4.25.0,<5"
@@ -162,10 +184,9 @@ mcp = ">=1.12.3,<2"
 maven = ">=3.9.10,<4"
 openjdk = ">=23.0.2,<24"
 openai = ">=1.99.1,<2"
-# UPOF Framework Dependencies
-sympy = ">=1.12,<2"
-numpy = ">=1.24,<2"
-transformers = ">=4.30,<5"
+sympy = ">=1.14.0,<2"
+numpy = ">=2.3.2,<3"
+scipy = ">=1.14.0,<2"
+transformers = ">=4.55.0,<5"
 vaderSentiment = ">=3.3.2,<4"
-textblob = ">=0.17.1,<1"
-requests = ">=2.31,<3"
+requests = ">=2.32.4,<3"

@@ -655,7 +655,7 @@ class UPOFEvaluator:
                         confidence_weighted_score=sentiment_data.get("confidence_weighted_score") if sentiment_data else None,
                         sentiment_metrics=sentiment_data.get("metrics") if sentiment_data else None,
                         emotional_harm_score=self.calculate_harm_score(sentiment_data) if sentiment_data else 0.0,
-                        detailed_analytics=f"Sentiment: {sentiment_data.get('transformer_label')}, Confidence: {sentiment_data.get('transformer_confidence')}, Harm Risk: {sentiment_data.get('emotional_harm_risk')}"
+                        detailed_analytics=f"Sentiment: {sentiment_data.get('transformer_label') if sentiment_data else 'N/A'}, Confidence: {sentiment_data.get('transformer_confidence') if sentiment_data else 'N/A'}, Harm Risk: {sentiment_data.get('emotional_harm_risk') if sentiment_data else 'N/A'}"
                     )
                     
                     results.append(result)

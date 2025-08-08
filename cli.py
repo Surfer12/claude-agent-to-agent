@@ -288,18 +288,37 @@ def parse_args():
         help="Anthropic API key (defaults to ANTHROPIC_API_KEY env var)"
     )
     
+    # Input mode options
+    input_group = parser.add_argument_group("Input mode options")
+    input_group.add_argument(
+        '--prompt', '-p',
+        help='Single prompt to process'
+    )
+    input_group.add_argument(
+        '--interactive', '-i',
+        action='store_true',
+        help='Interactive mode (default)'
+    )
+    input_group.add_argument(
+        '--file',
+        help='File to process'
+    )
+    
     args = parser.parse_args()
     
     # Validate input mode
     input_modes = sum(
         bool(mode) for mode in [args.prompt, args.interactive, args.file]
     )
-    if input_modes != 1:
+    if input_modes == 0:
+        # Default to interactive mode if no input mode specified
+        args.interactive = True
+    elif input_modes > 1:
         parser.error("Exactly one input mode (--prompt, --interactive, or --file) is required")
     
     # Set system prompt if not provided
-    if not args.system:
-        args.system = "You are Claude, an AI assistant. Be concise and helpful."
+    if not args.system_prompt:
+        args.system_prompt = "You are Claude, an AI assistant. Be concise and helpful."
     
     return args
 

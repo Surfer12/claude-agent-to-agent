@@ -1,29 +1,67 @@
-version: "3.9"
+version: '3.8'
 
 services:
   claude-agent:
-    build: .
-    container_name: claude-agent
-    volumes:
-      - ./.env:/app/.env:ro
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: claude-agent-to-agent
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-    # Security settings
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
-    read_only: true
-    tmpfs:
-      - /tmp
-    # Resource limits
-    mem_limit: 1g
-    mem_reservation: 512m
-    cpus: 1.0
-    # Networking (isolated)
-    networks:
-      - claude-net
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Mount current directory for development
+      - .:/app
+      # Mount logs directory
+      - ./logs:/app/logs
+      # Mount data directory for persistence
+      - ./data:/app/data
+    ports:
+      - "8000:8000"  # For web UI if needed
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Development service with hot reload
+  claude-agent-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: claude-agent-dev
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+    volumes:
+      - .:/app
+      - ./logs:/app/logs
+      - ./data:/app/data
+    ports:
+      - "8001:8000"
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    command: ["python", "cli.py", "--interactive", "--verbose"]
+
+  # Test service
+  claude-agent-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: claude-agent-test
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - .:/app
+    command: ["python", "-m", "pytest", "tests/", "-v"]
 
 networks:
-  claude-net:
-    driver: bridge
+  default:
+    name: claude-agent-network
