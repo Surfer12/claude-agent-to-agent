@@ -1,0 +1,64 @@
+# -------------------------------------------------------------
+# Ollama Dockerfile for macOS M4 Max (ARM64)
+# Secure, reproducible deployment with CPU-only inference
+# -------------------------------------------------------------
+
+# Base image: Debian Bullseye slim (ARM64) optimized for Apple Silicon
+FROM debian:bullseye-slim AS base
+
+# Set environment variables for non-interactive apt
+ENV DEBIAN_FRONTEND=noninteractive
+
+# -------------------------------------------------------------
+# Install only essential dependencies
+# -------------------------------------------------------------
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        gnupg \
+        acl \
+        && rm -rf /var/lib/apt/lists/*
+
+# -------------------------------------------------------------
+# Ollama version & checksum (update these for latest releases)
+# -------------------------------------------------------------
+ARG OLLAMA_VER=0.2.8
+ARG OLLAMA_URL=https://github.com/ollama/ollama/releases/download/v${OLLAMA_VER}/ollama-linux-arm64
+# IMPORTANT: Update this checksum from the official Ollama releases page
+ARG OLLAMA_SHA256=2bfa1e3d5a7c6b4e8f9a3e8c1b2d6f58f4e7c9b1124f6d7e5d3c9a2e1f7b4c2a
+
+# -------------------------------------------------------------
+# Create non-root user for security
+# -------------------------------------------------------------
+RUN useradd -m -s /bin/bash -U ollama
+
+# -------------------------------------------------------------
+# Download, verify, and install Ollama binary
+# -------------------------------------------------------------
+RUN curl -fsSL -o /usr/local/bin/ollama ${OLLAMA_URL} && \
+    echo "${OLLAMA_SHA256}  /usr/local/bin/ollama" | sha256sum -c - && \
+    chmod +x /usr/local/bin/ollama
+
+# -------------------------------------------------------------
+# Set up persistent model storage directory
+# -------------------------------------------------------------
+ENV OLLAMA_HOME=/ollama
+RUN mkdir -p ${OLLAMA_HOME} && \
+    chown -R ollama:ollama ${OLLAMA_HOME}
+
+# -------------------------------------------------------------
+# Switch to non-root user for security
+# -------------------------------------------------------------
+USER ollama
+WORKDIR ${OLLAMA_HOME}
+
+# -------------------------------------------------------------
+# Expose Ollama HTTP API port
+# -------------------------------------------------------------
+EXPOSE 11434
+
+# -------------------------------------------------------------
+# Default command: run Ollama server (CPU-only mode)
+# -------------------------------------------------------------
+CMD ["ollama", "serve"]
