@@ -14,12 +14,12 @@ This document summarizes all security vulnerabilities identified in the claude-a
 
 ## 🔴 Critical Vulnerabilities Fixed
 
-### 1. Next.js Authorization Bypass (CVE-2025-29927)
-- **Severity**: Critical (10/10 CVSS)
-- **Affected Version**: Next.js 14.2.15
-- **Patched Version**: Next.js 14.2.30
-- **Impact**: Authorization bypass in middleware
-- **Fix Applied**: Updated to Next.js 14.2.30 via Dependabot PR #1
+### 1. Next.js Improper Middleware Redirect Handling → SSRF
+- **Severity**: Moderate
+- **Affected Versions**: < 14.2.32 (14.x)
+- **Patched Version**: 14.2.32
+- **Impact**: Potential SSRF with improper header forwarding in middleware redirects
+- **Fix Applied**: Updated to Next.js 14.2.32, audited for `middleware` (none present)
 - **Location**: `financial-data-analyst/package.json`
 
 ### 2. Cross-spawn ReDoS (CVE-2024-21538)
@@ -58,26 +58,31 @@ This document summarizes all security vulnerabilities identified in the claude-a
 
 ## 🟢 Low Severity Vulnerabilities Fixed
 
-### 6. Next.js DoS with Server Actions (CVE-2024-56332)
-- **Severity**: Low (3/10 CVSS)
-- **Affected Version**: Next.js < 14.2.21
-- **Patched Version**: Next.js 14.2.30
-- **Impact**: Denial of Service with Server Actions
-- **Fix Applied**: Updated to Next.js 14.2.30 via Dependabot PR #1
+### 2. Next.js Content Injection via Image Optimization
+- **Severity**: Moderate
+- **Affected Versions**: < 14.2.31 (14.x)
+- **Patched Version**: 14.2.31
+- **Impact**: Attacker-controlled external image sources could trigger arbitrary file download
+- **Fix Applied**: Updated to Next.js 14.2.32 and hardened `images` config to allow only local/data URLs
+- **Location**: `financial-data-analyst/package.json`, `financial-data-analyst/next.config.mjs`
 
-### 7. Next.js Dev Server Info Exposure (CVE-2025-48068)
-- **Severity**: Low (2/10 CVSS)
-- **Affected Version**: Next.js < 14.2.30
-- **Patched Version**: Next.js 14.2.30
-- **Impact**: Limited source code exposure in dev server
-- **Fix Applied**: Updated to Next.js 14.2.30 via Dependabot PR #1
+### 3. Next.js Cache Key Confusion for Image Optimization API
+- **Severity**: Moderate
+- **Affected Versions**: Impacted 14.x prior to latest patches
+- **Patched Version**: 14.2.31+
+- **Impact**: Cache key confusion in `/_next/image` endpoints
+- **Fix Applied**: Updated to Next.js 14.2.32 and restricted remote images
+- **Location**: `financial-data-analyst/package.json`, `financial-data-analyst/next.config.mjs`
 
-### 8. Next.js Race Condition Cache Poisoning (CVE-2025-32421)
-- **Severity**: Low (2/10 CVSS)
-- **Affected Version**: Next.js < 14.2.24
-- **Patched Version**: Next.js 14.2.30
-- **Impact**: Race condition causing cache poisoning
-- **Fix Applied**: Updated to Next.js 14.2.30 via Dependabot PR #1
+### 4. Next.js Dev Server Info Exposure (CVE-2025-48068)
+- **Severity**: Low
+- **Patched in**: 14.2.30+
+- **Fix Applied**: Covered by update to 14.2.32
+
+### 5. Next.js Race Condition Cache Poisoning (CVE-2025-32421)
+- **Severity**: Low
+- **Patched in**: 14.2.24+
+- **Fix Applied**: Covered by update to 14.2.32
 
 ### 9. Brace-expansion ReDoS (CVE-2025-5889)
 - **Severity**: Low (2/10 CVSS)
@@ -89,19 +94,33 @@ This document summarizes all security vulnerabilities identified in the claude-a
 ## 🛠️ Fix Implementation Details
 
 ### Node.js/Next.js Frontend Fixes
-```json
+```diff
 // financial-data-analyst/package.json
-{
   "dependencies": {
-    // SECURITY FIX: Updated from 14.2.15 to 14.2.30
-    // Addresses 4 critical and moderate vulnerabilities
-    "next": "14.2.30",
-    
-    // SECURITY FIX: Updated from 2.13.0 to 2.13.1
-    // Addresses Babel RegExp complexity vulnerability
-    "recharts": "^2.13.1"
+-   "next": "14.2.30",
++   "next": "14.2.32",
+  },
+  "devDependencies": {
+-   "eslint-config-next": "14.2.30"
++   "eslint-config-next": "14.2.32"
   }
-}
+```
+
+```js
+// financial-data-analyst/next.config.mjs
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  images: {
+    domains: [],
+    remotePatterns: [],
+    formats: ["image/avif", "image/webp"],
+    dangerouslyAllowSVG: false,
+    contentDispositionType: "inline",
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+  },
+};
+export default nextConfig;
 ```
 
 ### Java/Maven Backend Fixes
@@ -168,10 +187,9 @@ mvn clean compile
 
 ## 🚀 Next Steps
 
-1. **Merge Dependabot PR #1** to complete all security fixes
-2. **Run security audit** to confirm all vulnerabilities resolved
-3. **Update documentation** to reflect secure versions
-4. **Monitor for new vulnerabilities** with automated scanning
+1. Run `npm audit` to confirm 0 vulnerabilities in frontend
+2. Monitor Next.js advisories for further patches (14.x → 15.x later)
+3. Keep `images` config tightly scoped; only allow domains if required
 
 ## 📈 Security Metrics
 
