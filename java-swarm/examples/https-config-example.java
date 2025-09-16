@@ -61,35 +61,17 @@ public class HttpsConfigExample {
             SSLContext sslContext = SSLContext.getInstance("TLS");
             
             // For production, use proper trust managers and key managers
-            // This is just an example - DO NOT use in production
-            TrustManager[] trustManagers = new TrustManager[] {
-                new X509TrustManager() {
-                    @Override
-                    public void checkClientTrusted(X509Certificate[] chain, String authType) {}
-                    
-                    @Override
-                    public void checkServerTrusted(X509Certificate[] chain, String authType) {
-                        // In production, implement proper certificate validation
-                        System.out.println("Validating server certificate: " + chain[0].getSubjectDN());
-                    }
-                    
-                    @Override
-                    public X509Certificate[] getAcceptedIssuers() {
-                        return new X509Certificate[0];
-                    }
-                }
-            };
+            // This example uses the default trust manager for security
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init((java.security.KeyStore) null);
+            TrustManager[] trustManagers = tmf.getTrustManagers();
             
             sslContext.init(null, trustManagers, new java.security.SecureRandom());
             
             // Create custom HTTP client with SSL configuration
             OkHttpClient customHttpClient = new OkHttpClient.Builder()
                     .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustManagers[0])
-                    .hostnameVerifier((hostname, session) -> {
-                        // In production, implement proper hostname verification
-                        System.out.println("Verifying hostname: " + hostname);
-                        return "api.openai.com".equals(hostname);
-                    })
+                    .hostnameVerifier(HttpsURLConnection.getDefaultHostnameVerifier())
                     .connectTimeout(30, TimeUnit.SECONDS)
                     .readTimeout(60, TimeUnit.SECONDS)
                     .build();
