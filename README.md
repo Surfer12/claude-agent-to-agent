@@ -2,6 +2,13 @@
 
 A provider-agnostic agent framework that supports both Claude and OpenAI backends, with unified CLI, computer use, and multi-agent swarm capabilities.
 
+## 🌐 Multi-Endpoint Deployment
+
+Prototype command line endpoints for Python, Java, and Mojo are available under
+`multi_endpoint/`. Each reads a mock API key from the `MOCK_API_KEY`
+environment variable and simply echoes input, providing a starting point for
+language-specific deployments.
+
 ## 🎯 Pixi Integration Complete
 
 ### **📋 New Files Created**
