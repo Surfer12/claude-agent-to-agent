@@ -6,6 +6,7 @@ import com.swarm.core.Swarm;
 import com.swarm.types.*;
 import okhttp3.*;
 import javax.net.ssl.*;
+import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -57,39 +58,29 @@ public class HttpsConfigExample {
         System.out.println("=== Custom SSL Configuration ===");
         
         try {
-            // Create custom SSL context (example - use proper certificates in production)
+            // Create SSL context using the default system trust store
             SSLContext sslContext = SSLContext.getInstance("TLS");
-            
-            // For production, use proper trust managers and key managers
-            // This is just an example - DO NOT use in production
-            TrustManager[] trustManagers = new TrustManager[] {
-                new X509TrustManager() {
-                    @Override
-                    public void checkClientTrusted(X509Certificate[] chain, String authType) {}
-                    
-                    @Override
-                    public void checkServerTrusted(X509Certificate[] chain, String authType) {
-                        // In production, implement proper certificate validation
-                        System.out.println("Validating server certificate: " + chain[0].getSubjectDN());
-                    }
-                    
-                    @Override
-                    public X509Certificate[] getAcceptedIssuers() {
-                        return new X509Certificate[0];
-                    }
+
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            trustManagerFactory.init((KeyStore) null);
+
+            TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+            X509TrustManager x509TrustManager = null;
+            for (TrustManager tm : trustManagers) {
+                if (tm instanceof X509TrustManager) {
+                    x509TrustManager = (X509TrustManager) tm;
+                    break;
                 }
-            };
-            
-            sslContext.init(null, trustManagers, new java.security.SecureRandom());
-            
-            // Create custom HTTP client with SSL configuration
+            }
+            if (x509TrustManager == null) {
+                throw new IllegalStateException("No X509TrustManager found");
+            }
+
+            sslContext.init(null, new TrustManager[] { x509TrustManager }, new java.security.SecureRandom());
+
+            // Create custom HTTP client with secure SSL configuration and default hostname verification
             OkHttpClient customHttpClient = new OkHttpClient.Builder()
-                    .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustManagers[0])
-                    .hostnameVerifier((hostname, session) -> {
-                        // In production, implement proper hostname verification
-                        System.out.println("Verifying hostname: " + hostname);
-                        return "api.openai.com".equals(hostname);
-                    })
+                    .sslSocketFactory(sslContext.getSocketFactory(), x509TrustManager)
                     .connectTimeout(30, TimeUnit.SECONDS)
                     .readTimeout(60, TimeUnit.SECONDS)
                     .build();

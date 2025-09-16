@@ -9,7 +9,8 @@ def run():
     args = parser.parse_args()
 
     api_key = os.environ.get("MOCK_API_KEY", "mock-api-key")
-    print(f"Python endpoint using API key: {api_key}")
+    redacted = api_key[:4] + "***" if api_key else "(not set)"
+    print(f"Python endpoint using API key: {redacted}")
     print(f"Message: {args.message}")
 
 
